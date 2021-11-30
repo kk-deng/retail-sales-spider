@@ -16,8 +16,7 @@ class SpiderDataItem(UpdateItem):
     command: feapder create -i spider_data.
     """
     __update_key__ = [
-        "upvotes", 
-        "upvotes_per_min",
+        "upvotes",
         "elapsed_mins",
         "reply_count",
         "view_count",
@@ -25,10 +24,9 @@ class SpiderDataItem(UpdateItem):
     ] # Update certain keys
 
     def __init__(self, *args, **kwargs):
-        self.thread_id = None
-        self.title = None
+        self._id = None # type : int(7) unsigned | allow_null : NO | key : PRI | default_value : None | extra : auto_increment | column_comment :
         self.upvotes = None
-        self.upvotes_per_min = None
+        # self.upvotes_per_min = None
         self.elapsed_mins = None
         self.retailer_name = None
         self.topic_title = None
