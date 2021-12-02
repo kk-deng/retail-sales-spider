@@ -8,23 +8,30 @@ Created on 2021-02-08 16:06:12
 """
 
 from datetime import datetime
+import time
+import random
 import feapder
+from feapder.utils.log import log
 from items import *
+
+SCRAPE_COUNT = 600
 
 
 class TestSpider(feapder.AirSpider):
     __custom_setting__ = dict(
         ITEM_PIPELINES=["feapder.pipelines.mongo_pipeline.MongoPipeline"],
-        MONGO_IP="localhost",
-        MONGO_PORT=27017,
-        MONGO_DB="feapder",
-        MONGO_USER_NAME="",
-        MONGO_USER_PASS="",
         SPIDER_MAX_RETRY_TIMES=2,
+        RANDOM_HEADERS=False,
+        DEFAULT_USERAGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+        USE_SESSION=True,
     )
 
     def start_requests(self):
-        yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+        for i in range(1, SCRAPE_COUNT):
+            time_gap = random.randrange(50, 70)
+            yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+            log.info(f'Running for no.{i}, waiting for {time_gap} seconds')
+            time.sleep(time_gap)
 
     def validate(self, request, response):
         if response.status_code != 200:
@@ -49,11 +56,12 @@ class TestSpider(feapder.AirSpider):
             elapsed_mins = self.elapsed_mins(first_post_time_obj)
             retailer_name = self.topictitle_retailer(topic)
 
-            if elapsed_mins <= 120:
+            if elapsed_mins <= 240:
 
                 item = spider_data_item.SpiderDataItem()  # 声明一个item
 
-                item._id = thread_id  # 给item属性赋值
+                # item.thread_id = thread_id  # 给item属性赋值
+                item.thread_id = thread_id
                 item.topic_title = topic_title  # 给item属性赋值
                 item.upvotes = upvotes  # 给item属性赋值
                 item.elapsed_mins = elapsed_mins
@@ -92,15 +100,15 @@ class TestSpider(feapder.AirSpider):
     @staticmethod
     def resolve_times_from_topic(first_post_time_raw):
         date_suffix_dict = {
-            'st': '',
-            'nd': '',
-            'rd': '',
-            'th': ''
+            "st": '',
+            "nd": '',
+            "rd": '',
+            "th": ''
         }
         for i, j in date_suffix_dict.items():
-            date_text = first_post_time_raw.replace(i, j)
+            first_post_time_raw = first_post_time_raw.replace(i, j)
         
-        return datetime.strptime(date_text, '%b %d, %Y %I:%M %p')
+        return datetime.strptime(first_post_time_raw, '%b %d, %Y %I:%M %p')
     
     @staticmethod
     def topictitle_retailer(topic):
@@ -112,5 +120,5 @@ class TestSpider(feapder.AirSpider):
 
 
 if __name__ == '__main__':
-    spider = TestSpider(redis_key="feapder3:test_spider", thread_count=10)
+    spider = TestSpider(thread_count=10)
     spider.start()

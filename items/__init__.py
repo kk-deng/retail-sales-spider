@@ -1,3 +1,3 @@
 __all__ = [
-    "spider_data_item"
+    "spider_data_item",
 ]
