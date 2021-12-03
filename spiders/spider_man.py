@@ -6,6 +6,7 @@ Created on 2021-02-08 16:06:12
 ---------
 @author: Boris
 """
+from typing import List, Set, Dict
 
 from datetime import datetime
 import time
@@ -15,9 +16,13 @@ from feapder.utils.log import log
 from items import *
 from tools import *
 
+import telegram
+
 from feapder.db.mongodb import MongoDB
 
 db = MongoDB()
+
+file_operator = FileReadWrite()
 SCRAPE_COUNT = 2
 
 
@@ -30,14 +35,14 @@ class TestSpider(feapder.AirSpider):
         USE_SESSION=True,
     )
 
-
-
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
             time_gap = random.randrange(50, 70)
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-            log.info(f'Running for no.{i}, waiting for {time_gap} seconds')
-            # time.sleep(time_gap)
+
+            if SCRAPE_COUNT > 2:
+                log.info(f'Running for no.{i}, waiting for {time_gap} seconds')
+                time.sleep(time_gap)
 
     def validate(self, request, response):
         if response.status_code != 200:
@@ -48,6 +53,9 @@ class TestSpider(feapder.AirSpider):
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
+
+        # Read watchlist for keywords watching
+        watch_list = file_operator.watchlist_csv
 
         for topic in topic_list:
 
@@ -85,16 +93,27 @@ class TestSpider(feapder.AirSpider):
                 # Find the same thread_id in MongoDB
                 db_documents = db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
                 
-                try:
-                    db_msg_sent = db_documents[0]['msg_sent_cnt']
-                
-                    if upvotes >= 9 and db_msg_sent == 0:
-                        sent = send_text_msg(topic, watchlist=f'[{keyword_list}] NEW!')
-                        if sent:
-                            item.msg_sent_cnt += 1  # Record the sending count
-                except:
-                    item.msg_sent_cnt = 0
+                # Parse retailer name and deal title, compared with watch_list and return list of boolean
+                boolean_watchlist = self.matches_list(retailer_name, topic_title, watch_list)
 
+                try:
+                    msg_sent_counter = db_documents[0]['msg_sent_cnt']
+                except:
+                    msg_sent_counter = 0
+
+                # Collect the msg sending conditions, any of them is True
+                sendmsg_conditions = [
+                    (upvotes >= 9), 
+                    (any(boolean_watchlist))
+                ]
+
+                if any(sendmsg_conditions) and msg_sent_counter == 0:
+                    sent = send_text_msg(topic, watchlist=f'[{keyword_list}] NEW!')
+                    if sent:
+                        msg_sent_counter += 1  # Record the sending count
+
+
+                item.msg_sent_cnt = msg_sent_counter
                 yield item  # 返回item， item会自动批量入库
     
     @staticmethod
@@ -139,7 +158,27 @@ class TestSpider(feapder.AirSpider):
         except:
             topictitle_retailer = topic.find('h3', class_='topictitle').text.split('\n')[1].strip()
         return topictitle_retailer
+    
+    @staticmethod
+    def send_text_msg(topic, **kwargs):
+        watchlist_str = kwargs.get('watchlist', 'Hot')
+        msg_content = f'{watchlist_str} @{topic["elapsed_mins"]}mins ago [{topic["upvotes"]} Votes] ({topic["upvotes_per_min"]}/min): {topic["topic_title"]}. Link: {topic["topic_link"]}'
+        print(f'MSG to be sent: {msg_content}')
+        return send_bot_msg(msg_content)
 
+    @staticmethod
+    def match_watchlist(topictitle_retailer: str, topic_title: str, watch_list: List[str]) -> List[bool]:
+        retailer_and_title = topictitle_retailer + ' ' + topic_title
+        true_watchlist = [keyword in retailer_and_title.lower() for keyword in watch_list]
+        return true_watchlist
+    
+    @staticmethod
+    def matched_keywords(boolean_watchlist: List[bool], watch_list: List[str]) -> str:
+        if boolean_watchlist:
+            matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
+            return "&".join(matches_list)
+        else:
+            return ''
 
 if __name__ == '__main__':
     spider = TestSpider(thread_count=10)

@@ -4,10 +4,10 @@ from fake_useragent import UserAgent
 
 
 class FileReadWrite:
-    def __init__(self, settings_path, deal_csv_path, watchlist_csv_path):
-        self.settings_path = settings_path
-        self.deal_csv_path = deal_csv_path
-        self.watchlist_csv_path = watchlist_csv_path
+    def __init__(self):
+        self.settings_path = 'resources\settings.json'
+        self.deal_csv_path = 'resources\deal.csv'
+        self.watchlist_csv_path = 'resources\watchlist.csv'
         self.token = self.__import_keys['token']
         self.chat_id = self.__import_keys['chat_id']
         self.ua = UserAgent()
