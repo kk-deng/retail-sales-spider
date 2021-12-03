@@ -35,7 +35,7 @@ class TestSpider(feapder.AirSpider):
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
 
             if SCRAPE_COUNT > 2:
-                log.info(f'Running for no.{i}, waiting for {time_gap} seconds')
+                log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
 
     def validate(self, request, response):
@@ -94,19 +94,24 @@ class TestSpider(feapder.AirSpider):
                 try:
                     msg_sent_counter = db_documents[0]['msg_sent_cnt']
                 except:
+                    log.info(f'New Added: {thread_id} [{upvotes} Votes] '
+                        f'@{"{:.2f}".format(elapsed_mins)}mins ago, '
+                        f'Brand: {topictitle_retailer}, Title: {topic_title}')
                     msg_sent_counter = 0
 
                 # Collect the msg sending conditions, any of them is True
-                sendmsg_conditions = [
+                sendmsg_conditions_1 = [
                     (upvotes >= 9), 
                     (any(boolean_watchlist))
                 ]
+                sendmsg_conditions_2 = [(upvotes >= 30),]
 
-                if any(sendmsg_conditions) and msg_sent_counter == 0:
+                # 1st condition for less popular deal, 2nd condition for popular deal
+                if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
+                    (any(sendmsg_conditions_2) and msg_sent_counter < 2):
                     sent = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}NEW!')
                     if sent:
                         msg_sent_counter += 1  # Record the sending count
-
 
                 item.msg_sent_cnt = msg_sent_counter
                 yield item  # 返回item， item会自动批量入库
@@ -159,27 +164,27 @@ class TestSpider(feapder.AirSpider):
         watchlist_str = kwargs.get('watchlist', 'Hot')
 
         # Get strings from item_dict
-        elapsed_mins = "{:.2f}".format(item_dict["elapsed_mins"])
+        elapsed_mins = item_dict["elapsed_mins"]
         upvotes = item_dict["upvotes"]
-        upvotes_per_min = "{:.2f}".format(upvotes/elapsed_mins)
+        upvotes_per_min = upvotes/elapsed_mins
         topic_title = item_dict["topic_title"]
         topic_link = item_dict["topic_link"]
-        msg_content = f'{watchlist_str} @{elapsed_mins}mins ago ' \
-            f'[{upvotes} Votes] ({upvotes_per_min}/min): ' \
+        msg_content = f'{watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago ' \
+            f'[{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): ' \
             f'{topic_title}. Link: {topic_link}'
         
-        log.info(f'MSG to be sent: {msg_content}')
         return cls.send_bot_msg(msg_content)
     
     @staticmethod
     def send_bot_msg(content_msg):
+        log.info(f'## Sending: {content_msg}')
         try:
             bot.send_message(text=content_msg, chat_id=file_operator.chat_id)
-            log.info('-- Msg was sent successfully!')
+            log.info('## Msg was sent successfully!')
             time.sleep(3)
             return True
         except Exception as e:
-            log.info(f'-- Msg failed sending with error:\n{e}')
+            log.info(f'## Msg failed sending with error:\n{e}')
             return False
 
     @staticmethod
@@ -196,7 +201,6 @@ class TestSpider(feapder.AirSpider):
         else:
             return ''
 
-if __name__ == '__main__':
-    spider = TestSpider(thread_count=10)
-    spider.send_bot_msg('Bot started!')
-    spider.start()
+# if __name__ == '__main__':
+#     spider = TestSpider(thread_count=10)
+#     spider.start()
