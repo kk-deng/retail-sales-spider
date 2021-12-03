@@ -26,10 +26,10 @@ MONGO_USER_PASS = ""
 # REDISDB_SERVICE_NAME = ""
 #
 # # 数据入库的pipeline，可自定义，默认MysqlPipeline
-# ITEM_PIPELINES = [
-#     "feapder.pipelines.mysql_pipeline.MysqlPipeline",
-#     # "feapder.pipelines.mongo_pipeline.MongoPipeline",
-# ]
+# "feapder.pipelines.mysql_pipeline.MysqlPipeline",
+ITEM_PIPELINES = [
+    "feapder.pipelines.mongo_pipeline.MongoPipeline",
+]
 # EXPORT_DATA_MAX_FAILED_TIMES = 10 # 导出数据时最大的失败次数，包括保存和更新，超过这个次数报警
 # EXPORT_DATA_MAX_RETRY_TIMES = 10 # 导出数据时最大的重试次数，包括保存和更新，超过这个次数则放弃重试
 #
@@ -40,9 +40,9 @@ MONGO_USER_PASS = ""
 #
 # # SPIDER
 # SPIDER_THREAD_COUNT = 1  # 爬虫并发数
-# SPIDER_SLEEP_TIME = 0  # 下载时间间隔 单位秒。 支持随机 如 SPIDER_SLEEP_TIME = [2, 5] 则间隔为 2~5秒之间的随机数，包含2和5
+# SPIDER_SLEEP_TIME = [50, 60]  # 下载时间间隔 单位秒。 支持随机 如 SPIDER_SLEEP_TIME = [2, 5] 则间隔为 2~5秒之间的随机数，包含2和5
 # SPIDER_TASK_COUNT = 1  # 每个parser从内存队列中获取任务的数量
-# SPIDER_MAX_RETRY_TIMES = 100  # 每个请求最大重试次数
+SPIDER_MAX_RETRY_TIMES = 2  # 每个请求最大重试次数
 # KEEP_ALIVE = False  # 爬虫是否常驻
 #
 # # 浏览器渲染
@@ -79,13 +79,13 @@ MONGO_USER_PASS = ""
 # PROXY_ENABLE = True
 #
 # # 随机headers
-# RANDOM_HEADERS = True
+RANDOM_HEADERS = False
 # # UserAgent类型 支持 'chrome', 'opera', 'firefox', 'internetexplorer', 'safari'，'mobile' 若不指定则随机类型
 # USER_AGENT_TYPE = "chrome"
 # # 默认使用的浏览器头 RANDOM_HEADERS=True时不生效
-# DEFAULT_USERAGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"
+DEFAULT_USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
 # # requests 使用session
-# USE_SESSION = False
+USE_SESSION = True
 #
 # # 去重
 # ITEM_FILTER_ENABLE = False  # item 去重
@@ -120,7 +120,7 @@ MONGO_USER_PASS = ""
 #
 # LOG_NAME = os.path.basename(os.getcwd())
 # LOG_PATH = "log/%s.log" % LOG_NAME  # log存储路径
-# LOG_LEVEL = "DEBUG"
+LOG_LEVEL = "INFO"
 # LOG_COLOR = True  # 是否带有颜色
 # LOG_IS_WRITE_TO_CONSOLE = True # 是否打印到控制台
 # LOG_IS_WRITE_TO_FILE = False  # 是否写文件

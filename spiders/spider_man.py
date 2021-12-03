@@ -21,19 +21,13 @@ import telegram
 from feapder.db.mongodb import MongoDB
 
 db = MongoDB()
+file_operator = file_input_output.FileReadWrite()
+bot = telegram.Bot(token=file_operator.token)
 
-file_operator = FileReadWrite()
-SCRAPE_COUNT = 2
+SCRAPE_COUNT = 600
 
 
 class TestSpider(feapder.AirSpider):
-    __custom_setting__ = dict(
-        ITEM_PIPELINES=["feapder.pipelines.mongo_pipeline.MongoPipeline"],
-        SPIDER_MAX_RETRY_TIMES=2,
-        RANDOM_HEADERS=False,
-        DEFAULT_USERAGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
-        USE_SESSION=True,
-    )
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
@@ -94,7 +88,8 @@ class TestSpider(feapder.AirSpider):
                 db_documents = db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
                 
                 # Parse retailer name and deal title, compared with watch_list and return list of boolean
-                boolean_watchlist = self.matches_list(retailer_name, topic_title, watch_list)
+                boolean_watchlist = self.match_watchlist(retailer_name, topic_title, watch_list)
+                matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 try:
                     msg_sent_counter = db_documents[0]['msg_sent_cnt']
@@ -108,7 +103,7 @@ class TestSpider(feapder.AirSpider):
                 ]
 
                 if any(sendmsg_conditions) and msg_sent_counter == 0:
-                    sent = send_text_msg(topic, watchlist=f'[{keyword_list}] NEW!')
+                    sent = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}NEW!')
                     if sent:
                         msg_sent_counter += 1  # Record the sending count
 
@@ -159,12 +154,33 @@ class TestSpider(feapder.AirSpider):
             topictitle_retailer = topic.find('h3', class_='topictitle').text.split('\n')[1].strip()
         return topictitle_retailer
     
-    @staticmethod
-    def send_text_msg(topic, **kwargs):
+    @classmethod
+    def send_text_msg(cls, item_dict, **kwargs):
         watchlist_str = kwargs.get('watchlist', 'Hot')
-        msg_content = f'{watchlist_str} @{topic["elapsed_mins"]}mins ago [{topic["upvotes"]} Votes] ({topic["upvotes_per_min"]}/min): {topic["topic_title"]}. Link: {topic["topic_link"]}'
-        print(f'MSG to be sent: {msg_content}')
-        return send_bot_msg(msg_content)
+
+        # Get strings from item_dict
+        elapsed_mins = "{:.2f}".format(item_dict["elapsed_mins"])
+        upvotes = item_dict["upvotes"]
+        upvotes_per_min = "{:.2f}".format(upvotes/elapsed_mins)
+        topic_title = item_dict["topic_title"]
+        topic_link = item_dict["topic_link"]
+        msg_content = f'{watchlist_str} @{elapsed_mins}mins ago ' \
+            f'[{upvotes} Votes] ({upvotes_per_min}/min): ' \
+            f'{topic_title}. Link: {topic_link}'
+        
+        log.info(f'MSG to be sent: {msg_content}')
+        return cls.send_bot_msg(msg_content)
+    
+    @staticmethod
+    def send_bot_msg(content_msg):
+        try:
+            bot.send_message(text=content_msg, chat_id=file_operator.chat_id)
+            log.info('-- Msg was sent successfully!')
+            time.sleep(3)
+            return True
+        except Exception as e:
+            log.info(f'-- Msg failed sending with error:\n{e}')
+            return False
 
     @staticmethod
     def match_watchlist(topictitle_retailer: str, topic_title: str, watch_list: List[str]) -> List[bool]:
@@ -174,12 +190,13 @@ class TestSpider(feapder.AirSpider):
     
     @staticmethod
     def matched_keywords(boolean_watchlist: List[bool], watch_list: List[str]) -> str:
-        if boolean_watchlist:
+        if any(boolean_watchlist):
             matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
-            return "&".join(matches_list)
+            return f'[{"&".join(matches_list)}] '
         else:
             return ''
 
 if __name__ == '__main__':
     spider = TestSpider(thread_count=10)
+    spider.send_bot_msg('Bot started!')
     spider.start()
