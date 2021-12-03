@@ -8,11 +8,6 @@ class FileReadWrite:
         self.settings_path = settings_path
         self.deal_csv_path = deal_csv_path
         self.watchlist_csv_path = watchlist_csv_path
-        self.sid_cookie_key = self.__import_keys['sid_cookie_key']
-        self.csrf_cookie_key = self.__import_keys['csrf_cookie_key']
-        self.phone_number = self.__import_keys['phone_number']
-        self.email_address = self.__import_keys['email_address']
-        self.password = self.__import_keys['password']
         self.token = self.__import_keys['token']
         self.chat_id = self.__import_keys['chat_id']
         self.ua = UserAgent()

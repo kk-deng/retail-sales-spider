@@ -13,8 +13,12 @@ import random
 import feapder
 from feapder.utils.log import log
 from items import *
+from tools import *
 
-SCRAPE_COUNT = 600
+from feapder.db.mongodb import MongoDB
+
+db = MongoDB()
+SCRAPE_COUNT = 2
 
 
 class TestSpider(feapder.AirSpider):
@@ -26,12 +30,14 @@ class TestSpider(feapder.AirSpider):
         USE_SESSION=True,
     )
 
+
+
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
             time_gap = random.randrange(50, 70)
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
             log.info(f'Running for no.{i}, waiting for {time_gap} seconds')
-            time.sleep(time_gap)
+            # time.sleep(time_gap)
 
     def validate(self, request, response):
         if response.status_code != 200:
@@ -56,8 +62,12 @@ class TestSpider(feapder.AirSpider):
             elapsed_mins = self.elapsed_mins(first_post_time_obj)
             retailer_name = self.topictitle_retailer(topic)
 
-            if elapsed_mins <= 240:
+            record_conditions = [
+                (elapsed_mins <= 120), 
+                (elapsed_mins <= 240 and upvotes >= 40)
+            ]
 
+            if any(record_conditions):
                 item = spider_data_item.SpiderDataItem()  # 声明一个item
 
                 # item.thread_id = thread_id  # 给item属性赋值
@@ -70,8 +80,20 @@ class TestSpider(feapder.AirSpider):
                 item.first_post_time = first_post_time_string
                 item.reply_count = posts
                 item.view_count = views
-                item.msg_sent_cnt = 0
                 item.topic_link = topic_title_link
+
+                # Find the same thread_id in MongoDB
+                db_documents = db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
+                
+                try:
+                    db_msg_sent = db_documents[0]['msg_sent_cnt']
+                
+                    if upvotes >= 9 and db_msg_sent == 0:
+                        sent = send_text_msg(topic, watchlist=f'[{keyword_list}] NEW!')
+                        if sent:
+                            item.msg_sent_cnt += 1  # Record the sending count
+                except:
+                    item.msg_sent_cnt = 0
 
                 yield item  # 返回item， item会自动批量入库
     
