@@ -1,6 +1,8 @@
 import json
 import csv
-from fake_useragent import UserAgent
+# from fake_useragent import UserAgent
+import random
+import re
 
 
 class FileReadWrite:
@@ -10,7 +12,12 @@ class FileReadWrite:
         self.watchlist_csv_path = 'resources\watchlist.csv'
         self.token = self.__import_keys['token']
         self.chat_id = self.__import_keys['chat_id']
-        self.ua = UserAgent()
+        self.MONGO_IP = self.__import_keys["MONGO_IP"]
+        self.MONGO_DB = self.__import_keys["MONGO_DB"]
+        self.MONGO_USER_NAME = self.__import_keys["MONGO_USER_NAME"]
+        self.MONGO_USER_PASS = self.__import_keys["MONGO_USER_PASS"]
+        self.mongodb_url = self.__import_keys['mongodb_url']
+        # self.ua = UserAgent(verify_ssl=False)
     
     @property
     def __import_keys(self):
@@ -71,9 +78,36 @@ class FileReadWrite:
         except:
             return []
 
+    @staticmethod
+    def grp(pat, txt):
+        r = re.search(pat, txt)
+        return r.group(0) if r else '&'
+
     @property
     def create_random_header(self):
-        user_agent = self.ua.random
-        return {"user-agent": str(user_agent),
-            'referer': 'https://www.costco.ca/.product.5203665.html'}
-
+        # browsers = {
+        #     'chrome': r'Chrome/[^ ]+',
+        #     'safari': r'AppleWebKit/[^ ]+',
+        #     'opera': r'Opera\s.+$',
+        #     'firefox': r'Firefox/.+$',
+        #     'internetexplorer': r'Trident/[^;]+',
+        # }
+        # browser = random.choice(self.ua.data_randomize)
+        # user_agent = sorted(self.ua.data_browsers[browser], key=lambda a: self.grp(browsers[browser], a))[-1]
+        # # user_agent = self.ua.random
+        with open('resources/user_agent.json') as s:
+            ua_list = json.load(s)
+            # Get a random index within the json list length
+            random_index = random.randrange(0, len(ua_list))
+            random_ua = ua_list[random_index]['useragent']
+            ua_list = {"rfd": {"user-agent": random_ua},
+                        "costco": {"user-agent": random_ua,
+                                    'referer': 'https://www.costco.ca/playstation-5-console-bundle.product.100696941.html'}
+            }
+        return ua_list
+        # 'https://www.costco.ca/.product.5203665.html'
+        # headers={
+        #     'authority': 'www.costco.ca',
+        #     'path': '/.product.5203665.html',
+        #     'headers': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+        #     'referer': 'https://www.costco.ca/playstation-5-console-bundle.product.100696941.html'}

@@ -2,6 +2,8 @@
 """爬虫配置文件"""
 # import os
 # import sys
+from tools import *
+file_operator = file_input_output.FileReadWrite()
 #
 # # MYSQL
 # MYSQL_IP = "localhost"
@@ -11,11 +13,16 @@
 # MYSQL_USER_PASS = ""
 #
 # # MONGODB
-MONGO_IP = "localhost"
+# MONGO_IP = "localhost"
+# MONGO_PORT = 27017
+# MONGO_DB = "feapder"
+# MONGO_USER_NAME = ""
+# MONGO_USER_PASS = ""
+MONGO_IP = file_operator.MONGO_IP  #"localhost"
 MONGO_PORT = 27017
 MONGO_DB = "feapder"
-MONGO_USER_NAME = ""
-MONGO_USER_PASS = ""
+MONGO_USER_NAME = file_operator.MONGO_USER_NAME
+MONGO_USER_PASS = file_operator.MONGO_USER_PASS
 #
 # # REDIS
 # # ip:port 多个可写为列表或者逗号隔开 如 ip1:port1,ip2:port2 或 ["ip1:port1", "ip2:port2"]
@@ -67,7 +74,7 @@ KEEP_ALIVE = True  # 爬虫是否常驻
 # # request防丢机制。（指定的REQUEST_LOST_TIMEOUT时间内request还没做完，会重新下发 重做）
 # REQUEST_LOST_TIMEOUT = 600  # 10分钟
 # # request网络请求超时时间
-# REQUEST_TIMEOUT = 22  # 等待服务器响应的超时时间，浮点数，或(connect timeout, read timeout)元组
+REQUEST_TIMEOUT = 30  # 等待服务器响应的超时时间，浮点数，或(connect timeout, read timeout)元组
 #
 # # 下载缓存 利用redis缓存，但由于内存大小限制，所以建议仅供开发调试代码时使用，防止每次debug都需要网络请求
 # RESPONSE_CACHED_ENABLE = False  # 是否启用下载缓存 成本高的数据或容易变需求的数据，建议设置为True

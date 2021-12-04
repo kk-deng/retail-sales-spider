@@ -8,7 +8,7 @@ Created on 2021-02-08 16:06:12
 """
 from typing import List, Set, Dict
 
-from datetime import datetime
+from datetime import datetime, time as tm
 import time
 import random
 import feapder
@@ -40,14 +40,23 @@ class TestSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        request.headers = self.random_header
+        if 'redflagdeals' in request.url:
+            request.headers = self.random_header['rfd']
+        elif 'costco' in request.url:
+            request.headers = self.random_header['costco']
+
         return request
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
             time_gap = random.randrange(50, 70)
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-            yield feapder.Request("https://www.costco.ca/.product.5203665.html", callback=self.parse_costco)
+
+            # Only check costco in daytime
+            now = datetime.now().time()
+            if tm(8,00) <= now <= tm(18,30):
+                yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html", 
+                    callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -61,13 +70,13 @@ class TestSpider(feapder.AirSpider):
         #     return False # 抛弃当前请求
 
     def parse_costco(self, request, response):
-        if response.status_code != 404:
-            log.info('Costco PS5 IN STOCK!!')
+        status_code = response.status_code
+        if status_code == 200 and 'IN_STOCK' in response.text:
+            log.info('Costco PS5 IN STOCK!!!')
             self.send_bot_msg(f'Costco PS5 updated: {response.status_code}. '
                 f'Link: {request.url}')
         else:
-            log.info('Costco PS5 not in stock...')
-            pass
+            log.info(f'Costco PS5 not in stock...Status code: {status_code}')
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
@@ -183,8 +192,7 @@ class TestSpider(feapder.AirSpider):
             topictitle_retailer = topic.find('h3', class_='topictitle').text.split('\n')[1].strip()
         return topictitle_retailer
     
-    @classmethod
-    def send_text_msg(cls, item_dict, **kwargs):
+    def send_text_msg(self, item_dict, **kwargs):
         watchlist_str = kwargs.get('watchlist', 'Hot')
 
         # Get strings from item_dict
@@ -198,7 +206,7 @@ class TestSpider(feapder.AirSpider):
             f'[{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): ' \
             f'{topic_title}. Link: {topic_link}'
         
-        return cls.send_bot_msg(msg_content)
+        return self.send_bot_msg(msg_content)
     
     def send_bot_msg(self, content_msg: str) -> bool:
         log.info(f'## Sending: {content_msg}')
