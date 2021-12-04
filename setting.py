@@ -43,7 +43,7 @@ ITEM_PIPELINES = [
 # SPIDER_SLEEP_TIME = [50, 60]  # 下载时间间隔 单位秒。 支持随机 如 SPIDER_SLEEP_TIME = [2, 5] 则间隔为 2~5秒之间的随机数，包含2和5
 # SPIDER_TASK_COUNT = 1  # 每个parser从内存队列中获取任务的数量
 SPIDER_MAX_RETRY_TIMES = 2  # 每个请求最大重试次数
-# KEEP_ALIVE = False  # 爬虫是否常驻
+KEEP_ALIVE = True  # 爬虫是否常驻
 #
 # # 浏览器渲染
 # WEBDRIVER = dict(

@@ -30,22 +30,44 @@ class TestSpider(feapder.AirSpider):
         self.db = MongoDB()
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
+        self.random_header = self.file_operator.create_random_header
+
+    def start_callback(self):
+        self.send_bot_msg('Bot started!')
+    
+    def end_callback(self):
+        self.send_bot_msg('Bot Stopped...!')
+
+    def download_midware(self, request):
+        # Downloader middleware uses random header from file_input_output
+        request.headers = self.random_header
+        return request
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
             time_gap = random.randrange(50, 70)
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+            yield feapder.Request("https://www.costco.ca/.product.5203665.html", callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
 
-    def validate(self, request, response):
-        if response.status_code != 200:
-            raise Exception("response code not 200")  # 重试
+    # def validate(self, request, response):
+    #     if response.status_code != 200:
+    #         raise Exception("response code not 200")  # 重试
 
         # if "哈哈" not in response.text:
         #     return False # 抛弃当前请求
+
+    def parse_costco(self, request, response):
+        if response.status_code != 404:
+            log.info('Costco PS5 IN STOCK!!')
+            self.send_bot_msg(f'Costco PS5 updated: {response.status_code}. '
+                f'Link: {request.url}')
+        else:
+            log.info('Costco PS5 not in stock...')
+            pass
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')

@@ -11,5 +11,4 @@ from spiders import *
 
 if __name__ == "__main__":
     spider = spider_man.TestSpider()
-    spider.send_bot_msg('Bot started!')
     spider.start()

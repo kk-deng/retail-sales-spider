@@ -75,5 +75,5 @@ class FileReadWrite:
     def create_random_header(self):
         user_agent = self.ua.random
         return {"user-agent": str(user_agent),
-            'referer': 'https://forums.redflagdeals.com/hot-deals-f9/?sk=tt&rfd_sk=tt&sd=d'}
+            'referer': 'https://www.costco.ca/.product.5203665.html'}
 
