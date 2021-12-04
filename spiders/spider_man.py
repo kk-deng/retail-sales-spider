@@ -20,14 +20,16 @@ import telegram
 
 from feapder.db.mongodb import MongoDB
 
-db = MongoDB()
-file_operator = file_input_output.FileReadWrite()
-bot = telegram.Bot(token=file_operator.token)
 
 SCRAPE_COUNT = 600
 
 
 class TestSpider(feapder.AirSpider):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.db = MongoDB()
+        self.file_operator = file_input_output.FileReadWrite()
+        self.bot = telegram.Bot(token=self.file_operator.token)
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
@@ -49,7 +51,7 @@ class TestSpider(feapder.AirSpider):
         topic_list = response.bs4().find_all('li', class_='row topic')
 
         # Read watchlist for keywords watching
-        watch_list = file_operator.watchlist_csv
+        watch_list = self.file_operator.watchlist_csv
 
         for topic in topic_list:
 
@@ -62,7 +64,7 @@ class TestSpider(feapder.AirSpider):
             first_post_time_obj = self.first_post_time_obj(topic)
             first_post_time_string = self.first_post_time_string(first_post_time_obj)
             elapsed_mins = self.elapsed_mins(first_post_time_obj)
-            retailer_name = self.topictitle_retailer(topic)
+            topictitle_retailer = self.topictitle_retailer(topic)
 
             record_conditions = [
                 (elapsed_mins <= 120), 
@@ -77,7 +79,7 @@ class TestSpider(feapder.AirSpider):
                 item.topic_title = topic_title  # 给item属性赋值
                 item.upvotes = upvotes  # 给item属性赋值
                 item.elapsed_mins = elapsed_mins
-                item.retailer_name = retailer_name
+                item.retailer_name = topictitle_retailer
                 item.first_post_time_obj = first_post_time_obj
                 item.first_post_time = first_post_time_string
                 item.reply_count = posts
@@ -85,10 +87,10 @@ class TestSpider(feapder.AirSpider):
                 item.topic_link = topic_title_link
 
                 # Find the same thread_id in MongoDB
-                db_documents = db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
+                db_documents = self.db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
                 
                 # Parse retailer name and deal title, compared with watch_list and return list of boolean
-                boolean_watchlist = self.match_watchlist(retailer_name, topic_title, watch_list)
+                boolean_watchlist = self.match_watchlist(topictitle_retailer, topic_title, watch_list)
                 matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 try:
@@ -117,7 +119,7 @@ class TestSpider(feapder.AirSpider):
                 yield item  # 返回item， item会自动批量入库
     
     @staticmethod
-    def upvotes(topic):
+    def upvotes(topic) -> int:
         upvotes_soup = topic.find('dl', {'class':'post_voting'})
         upvotes = int(upvotes_soup.text.strip('+')) if upvotes_soup else 0
         return upvotes
@@ -129,11 +131,11 @@ class TestSpider(feapder.AirSpider):
         return cls.resolve_times_from_topic(first_post_time_raw)
 
     @staticmethod
-    def first_post_time_string(first_post_time_obj):
+    def first_post_time_string(first_post_time_obj) -> str:
         return datetime.strftime(first_post_time_obj, '%m-%d %H:%M')
 
     @staticmethod
-    def elapsed_mins(first_post_time_obj):
+    def elapsed_mins(first_post_time_obj) -> float:
         now = datetime.now()
         post_time = first_post_time_obj
         return (now - post_time).total_seconds() / 60
@@ -152,7 +154,7 @@ class TestSpider(feapder.AirSpider):
         return datetime.strptime(first_post_time_raw, '%b %d, %Y %I:%M %p')
     
     @staticmethod
-    def topictitle_retailer(topic):
+    def topictitle_retailer(topic) -> str:
         try:
             topictitle_retailer = topic.find('a', class_='topictitle_retailer').text.strip()
         except:
@@ -169,17 +171,17 @@ class TestSpider(feapder.AirSpider):
         upvotes_per_min = upvotes/elapsed_mins
         topic_title = item_dict["topic_title"]
         topic_link = item_dict["topic_link"]
+
         msg_content = f'{watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago ' \
             f'[{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): ' \
             f'{topic_title}. Link: {topic_link}'
         
         return cls.send_bot_msg(msg_content)
     
-    @staticmethod
-    def send_bot_msg(content_msg):
+    def send_bot_msg(self, content_msg: str) -> bool:
         log.info(f'## Sending: {content_msg}')
         try:
-            bot.send_message(text=content_msg, chat_id=file_operator.chat_id)
+            self.bot.send_message(text=content_msg, chat_id=self.file_operator.chat_id)
             log.info('## Msg was sent successfully!')
             time.sleep(3)
             return True
