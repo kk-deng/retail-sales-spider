@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """爬虫配置文件"""
-# import os
+import os
 # import sys
 from tools import *
 file_operator = file_input_output.FileReadWrite()
@@ -125,12 +125,12 @@ USE_SESSION = True
 # WARNING_LEVEL = "DEBUG"  # 报警级别， DEBUG / ERROR
 # WARNING_FAILED_COUNT = 1000  # 任务失败数 超过WARNING_FAILED_COUNT则报警
 #
-# LOG_NAME = os.path.basename(os.getcwd())
-# LOG_PATH = "log/%s.log" % LOG_NAME  # log存储路径
+LOG_NAME = os.path.basename(os.getcwd())
+LOG_PATH = "log/%s.log" % LOG_NAME  # log存储路径
 LOG_LEVEL = "INFO"
 # LOG_COLOR = True  # 是否带有颜色
 # LOG_IS_WRITE_TO_CONSOLE = True # 是否打印到控制台
-# LOG_IS_WRITE_TO_FILE = False  # 是否写文件
+LOG_IS_WRITE_TO_FILE = True  # 是否写文件
 # LOG_MODE = "w"  # 写文件的模式
 # LOG_MAX_BYTES = 10 * 1024 * 1024  # 每个日志文件的最大字节数
 # LOG_BACKUP_COUNT = 20  # 日志文件保留数量

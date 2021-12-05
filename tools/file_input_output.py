@@ -78,10 +78,10 @@ class FileReadWrite:
         except:
             return []
 
-    @staticmethod
-    def grp(pat, txt):
-        r = re.search(pat, txt)
-        return r.group(0) if r else '&'
+    # @staticmethod
+    # def grp(pat, txt):
+    #     r = re.search(pat, txt)
+    #     return r.group(0) if r else '&'
 
     @property
     def create_random_header(self):
@@ -98,8 +98,7 @@ class FileReadWrite:
         with open('resources/user_agent.json') as s:
             ua_list = json.load(s)
             # Get a random index within the json list length
-            random_index = random.randrange(0, len(ua_list))
-            random_ua = ua_list[random_index]['useragent']
+            random_ua = random.choice(ua_list)['useragent']
             ua_list = {"rfd": {"user-agent": random_ua},
                         "costco": {"user-agent": random_ua,
                                     'referer': 'https://www.costco.ca/playstation-5-console-bundle.product.100696941.html'}
