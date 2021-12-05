@@ -24,7 +24,7 @@ from feapder.db.mongodb import MongoDB
 SCRAPE_COUNT = 600
 
 
-class TestSpider(feapder.AirSpider):
+class RfdSpider(feapder.BaseParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.db = MongoDB()
@@ -40,23 +40,13 @@ class TestSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        if 'redflagdeals' in request.url:
-            request.headers = self.random_header['rfd']
-        elif 'costco' in request.url:
-            request.headers = self.random_header['costco']
-
+        request.headers = self.random_header['rfd']
         return request
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
             time_gap = random.randrange(50, 70)
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-
-            # Only check costco in daytime
-            now = datetime.now().time()
-            if tm(8,00) <= now <= tm(18,30):
-                yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html", 
-                    callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -68,15 +58,6 @@ class TestSpider(feapder.AirSpider):
 
         # if "哈哈" not in response.text:
         #     return False # 抛弃当前请求
-
-    def parse_costco(self, request, response):
-        status_code = response.status_code
-        if status_code == 200 and 'IN_STOCK' in response.text:
-            log.info('Costco PS5 IN STOCK!!!')
-            self.send_bot_msg(f'Costco PS5 updated: {response.status_code}. '
-                f'Link: {request.url}')
-        else:
-            log.info(f'Costco PS5 not in stock...Status code: {status_code}')
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
