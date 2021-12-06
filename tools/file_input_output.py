@@ -100,8 +100,12 @@ class FileReadWrite:
             # Get a random index within the json list length
             random_ua = random.choice(ua_list)['useragent']
             ua_list = {"rfd": {"user-agent": random_ua},
-                        "costco": {"user-agent": random_ua,
-                                    'referer': 'https://www.costco.ca/playstation-5-console-bundle.product.100696941.html'}
+                        "costco": {
+                            "accept": "pplication/json, text/javascript, */*; q=0.01",
+                            "accept-encoding": 'gzip, deflate, br',
+                            "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
+                            "user-agent": random_ua,
+                            'referer': 'https://www.costco.ca/'}
             }
         return ua_list
         # 'https://www.costco.ca/.product.5203665.html'

@@ -24,7 +24,7 @@ from feapder.db.mongodb import MongoDB
 SCRAPE_COUNT = 600
 
 
-class TestSpider(feapder.AirSpider):
+class RfdSpider(feapder.AirSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.db = MongoDB()
@@ -49,22 +49,33 @@ class TestSpider(feapder.AirSpider):
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
-            time_gap = random.randrange(50, 70)
+            # Now time
+            now = datetime.now().time()
+
+            # Lower the speed at night
+            if tm(1,00) <= now <= tm(7,00):
+                time_gap = random.randrange(180, 300)
+            else:
+                time_gap = random.randrange(50, 70)
+            
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
 
             # Only check costco in daytime
-            now = datetime.now().time()
             if tm(8,00) <= now <= tm(18,30):
-                yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html", 
+                yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html?langId=-24", 
+                    callback=self.parse_costco)
+                yield feapder.Request("https://www.costco.ca/.product.100780734.html?langId=-24", 
+                    callback=self.parse_costco)
+                yield feapder.Request("https://www.costco.ca/.product.5203665.html?langId=-24", 
                     callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
 
-    # def validate(self, request, response):
-    #     if response.status_code != 200:
-    #         raise Exception("response code not 200")  # 重试
+    def validate(self, request, response):
+        if ('redflagdeals' in request.url) and (response.status_code != 200):
+            raise Exception("response code not 200")  # 重试
 
         # if "哈哈" not in response.text:
         #     return False # 抛弃当前请求
@@ -234,5 +245,5 @@ class TestSpider(feapder.AirSpider):
             return ''
 
 # if __name__ == '__main__':
-#     spider = TestSpider(thread_count=10)
+#     spider = RfdSpider(thread_count=10)
 #     spider.start()

@@ -46,10 +46,10 @@ ITEM_PIPELINES = [
 # COLLECTOR_TASK_COUNT = 10  # 每次获取任务数量
 #
 # # SPIDER
-# SPIDER_THREAD_COUNT = 1  # 爬虫并发数
+SPIDER_THREAD_COUNT = 2  # 爬虫并发数
 # SPIDER_SLEEP_TIME = [50, 60]  # 下载时间间隔 单位秒。 支持随机 如 SPIDER_SLEEP_TIME = [2, 5] 则间隔为 2~5秒之间的随机数，包含2和5
 # SPIDER_TASK_COUNT = 1  # 每个parser从内存队列中获取任务的数量
-SPIDER_MAX_RETRY_TIMES = 2  # 每个请求最大重试次数
+SPIDER_MAX_RETRY_TIMES = 3  # 每个请求最大重试次数
 KEEP_ALIVE = True  # 爬虫是否常驻
 #
 # # 浏览器渲染
@@ -92,7 +92,7 @@ RANDOM_HEADERS = False
 # # 默认使用的浏览器头 RANDOM_HEADERS=True时不生效
 DEFAULT_USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
 # # requests 使用session
-USE_SESSION = True
+# USE_SESSION = False
 #
 # # 去重
 # ITEM_FILTER_ENABLE = False  # item 去重
