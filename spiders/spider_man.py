@@ -44,6 +44,8 @@ class RfdSpider(feapder.AirSpider):
             request.headers = self.random_header['rfd']
         elif 'costco' in request.url:
             request.headers = self.random_header['costco']
+        elif 'bestbuy' in request.url:
+            request.headers = self.random_header['bestbuy']
 
         return request
 
@@ -53,12 +55,16 @@ class RfdSpider(feapder.AirSpider):
             now = datetime.now().time()
 
             # Lower the speed at night
-            if tm(1,00) <= now <= tm(7,00):
+            if tm(1,00) <= now <= tm(2,59):
                 time_gap = random.randrange(180, 300)
+            elif tm(3,00) <= now <= tm(7,00):
+                log.info('Task exiting...')
+                break
             else:
                 time_gap = random.randrange(50, 70)
             
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+            yield feapder.Request("https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336", callback=self.parse_bb)
 
             # Only check costco in daytime
             if tm(8,00) <= now <= tm(18,30):
@@ -88,6 +94,17 @@ class RfdSpider(feapder.AirSpider):
                 f'Link: {request.url}')
         else:
             log.info(f'Costco PS5 not in stock...Status code: {status_code}')
+    
+    def parse_bb(self, request, response):
+        add_to_cart_btn = response.xpath('//*[@id="test"]/button[not(@disabled)]')
+        disabled_btn = response.xpath('//*[@id="test"]/button[@disabled]')
+
+        if len(add_to_cart_btn) > 0:
+            log.info('Bestbuy PS5 IN STOCK!!!')
+            self.send_bot_msg(f'Bestbuy PS5 updated {add_to_cart_btn}.'
+                f'Link: {request.url}')
+        else:
+            log.info(f'Bestbuy PS5 not in stock... {disabled_btn}')
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')

@@ -105,7 +105,13 @@ class FileReadWrite:
                             "accept-encoding": 'gzip, deflate, br',
                             "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
                             "user-agent": random_ua,
-                            'referer': 'https://www.costco.ca/'}
+                            'referer': 'https://www.costco.ca/'},
+                        "bestbuy": {
+                            "user-agent": random_ua,
+                            "referer": 'https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336',
+                            "DNT": '1',
+                            "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
+                        }
             }
         return ua_list
         # 'https://www.costco.ca/.product.5203665.html'
