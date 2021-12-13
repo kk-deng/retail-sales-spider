@@ -21,7 +21,7 @@ import telegram
 from feapder.db.mongodb import MongoDB
 
 
-SCRAPE_COUNT = 600
+SCRAPE_COUNT = 800
 
 
 class RfdSpider(feapder.AirSpider):
@@ -64,16 +64,21 @@ class RfdSpider(feapder.AirSpider):
                 time_gap = random.randrange(50, 70)
             
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-            yield feapder.Request("https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336", callback=self.parse_bb)
+            # yield feapder.Request("https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336", callback=self.parse_bb_ps5)
+            yield feapder.Request(
+                url = "https://www.bestbuy.ca/ecomm-api/availability/products?accept=application%2Fvnd.bestbuy.standardproduct.v1%2Bjson&accept-language=en-CA&locations=956%7C237%7C937%7C200%7C943%7C927%7C932%7C62%7C965%7C931%7C57%7C985%7C617%7C977%7C203%7C223%7C949%7C795%7C916%7C544%7C910%7C938%7C925%7C954%7C207%7C202%7C926%7C959%7C622%7C233%7C930%7C613%7C245&postalCode=L3T7T7&skus=15604563",
+                payload={},
+                callback=self.parse_bb_tcl
+            )
 
             # Only check costco in daytime
-            if tm(8,00) <= now <= tm(18,30):
-                yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html?langId=-24", 
-                    callback=self.parse_costco)
-                yield feapder.Request("https://www.costco.ca/.product.100780734.html?langId=-24", 
-                    callback=self.parse_costco)
-                yield feapder.Request("https://www.costco.ca/.product.5203665.html?langId=-24", 
-                    callback=self.parse_costco)
+            # if tm(8,00) <= now <= tm(18,30):
+            #     yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html?langId=-24", 
+            #         callback=self.parse_costco)
+            #     yield feapder.Request("https://www.costco.ca/.product.100780734.html?langId=-24", 
+            #         callback=self.parse_costco)
+            #     yield feapder.Request("https://www.costco.ca/.product.5203665.html?langId=-24", 
+            #         callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -95,7 +100,7 @@ class RfdSpider(feapder.AirSpider):
         else:
             log.info(f'Costco PS5 not in stock...Status code: {status_code}')
     
-    def parse_bb(self, request, response):
+    def parse_bb_ps5(self, request, response):
         add_to_cart_btn = response.xpath('//*[@id="test"]/button[not(@disabled)]')
         disabled_btn = response.xpath('//*[@id="test"]/button[@disabled]')
 
@@ -105,6 +110,40 @@ class RfdSpider(feapder.AirSpider):
                 f'Link: {request.url}')
         else:
             log.info(f'Bestbuy PS5 not in stock... {disabled_btn}')
+    
+    def parse_bb_tcl(self, request, response):
+        
+        try:
+            availabilities = response.json['availabilities'][0]
+
+            shipping = availabilities['shipping']
+            pickup = availabilities['pickup']
+            sku = availabilities['sku']
+            seller_id = availabilities['sellerId']
+
+            quantity_remaining = shipping['quantityRemaining']
+            if quantity_remaining > 0:
+                log.info(f'TCL 55\" IN STOCK!!! Status: {shipping["status"]} Quantity: {quantity_remaining}')
+                self.send_bot_msg(f'TCL 55" in stock!! Status: {shipping["status"]}: {quantity_remaining} left.'
+                    f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
+            
+            elif pickup['status'] not in  ('OutOfStock', 'NotAvailable'):
+                locations = pickup['locations']
+
+                locations_instock = [f'{location["name"]}: {location["quantityOnHand"]} left.' for location in locations if location['quantityOnHand'] > 0]
+
+                msg_content = "\n".join(locations_instock)
+
+                log.info(f'TCL 55\" can Pick UP!! Status: {pickup["status"]}: {msg_content}')
+                self.send_bot_msg(f'TCL 55 can Pick Up!! Status: {pickup["status"]}: {msg_content}.'
+                    f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
+            
+            else:
+                log.info(f'TCL 55" NOT in stock...')
+
+        except Exception as e:
+            log.info(f'Bestbuy TCL 55" info error...\n {e}')
+
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
@@ -260,6 +299,16 @@ class RfdSpider(feapder.AirSpider):
             return f'[{"&".join(matches_list)}] '
         else:
             return ''
+
+class BestBuyItem:
+    def __init__(self, availabilities):
+        self.shipping = availabilities['shipping']
+        self.pickup = availabilities['pickup']
+        self.sku = availabilities['sku']
+        self.seller_id = availabilities['sellerId']
+        self.shipping_quantity = self.shipping['quantityRemaining']
+        
+
 
 # if __name__ == '__main__':
 #     spider = RfdSpider(thread_count=10)
