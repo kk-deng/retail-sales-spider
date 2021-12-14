@@ -22,6 +22,8 @@ from feapder.db.mongodb import MongoDB
 
 
 SCRAPE_COUNT = 800
+BB_SHIPPING_CHECK = True
+BB_PICKUP_CHECK = False
 
 
 class RfdSpider(feapder.AirSpider):
@@ -31,6 +33,7 @@ class RfdSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
+        self.tcl_skus = "|".join(['15604563'])
 
     def start_callback(self):
         self.send_bot_msg('Bot started!')
@@ -65,8 +68,21 @@ class RfdSpider(feapder.AirSpider):
             
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
             # yield feapder.Request("https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336", callback=self.parse_bb_ps5)
+            # yield feapder.Request(
+            #     url = "https://www.bestbuy.ca/ecomm-api/availability/products?accept=application%2Fvnd.bestbuy.standardproduct.v1%2Bjson&accept-language=en-CA&locations=956%7C237%7C937%7C200%7C943%7C927%7C932%7C62%7C965%7C931%7C57%7C985%7C617%7C977%7C203%7C223%7C949%7C795%7C916%7C544%7C910%7C938%7C925%7C954%7C207%7C202%7C926%7C959%7C622%7C233%7C930%7C613%7C245&postalCode=L3T7T7&skus=15604563",
+            #     payload={},
+            #     callback=self.parse_bb_tcl
+            # )
+
             yield feapder.Request(
-                url = "https://www.bestbuy.ca/ecomm-api/availability/products?accept=application%2Fvnd.bestbuy.standardproduct.v1%2Bjson&accept-language=en-CA&locations=956%7C237%7C937%7C200%7C943%7C927%7C932%7C62%7C965%7C931%7C57%7C985%7C617%7C977%7C203%7C223%7C949%7C795%7C916%7C544%7C910%7C938%7C925%7C954%7C207%7C202%7C926%7C959%7C622%7C233%7C930%7C613%7C245&postalCode=L3T7T7&skus=15604563",
+                url = "https://www.bestbuy.ca/ecomm-api/availability/products?",
+                params= {
+                    "accept": "application/vnd.bestbuy.standardproduct.v1+json",
+                    "accept-language": "en-CA",
+                    "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
+                    "postalCode": "L3T7T7",
+                    "skus": self.tcl_skus
+                },
                 payload={},
                 callback=self.parse_bb_tcl
             )
@@ -112,34 +128,62 @@ class RfdSpider(feapder.AirSpider):
             log.info(f'Bestbuy PS5 not in stock... {disabled_btn}')
     
     def parse_bb_tcl(self, request, response):
-        
+        response_json = response.json
+
+        availabilities = response_json.get('availabilities')
+
         try:
-            availabilities = response.json['availabilities'][0]
+            for availability in availabilities:
+                product = BestBuyItem(availability)
 
-            shipping = availabilities['shipping']
-            pickup = availabilities['pickup']
-            sku = availabilities['sku']
-            seller_id = availabilities['sellerId']
+                if BB_SHIPPING_CHECK:
+                    if product.shipping_status == 'InStock':
+                        msg_content = product.check_shipping()
+                        log.warning(msg_content)
+                        self.send_bot_msg(msg_content)
+                    else:
+                        msg_content = product.check_shipping()
+                        log.info(msg_content)
 
-            quantity_remaining = shipping['quantityRemaining']
-            if quantity_remaining > 0:
-                log.info(f'TCL 55\" IN STOCK!!! Status: {shipping["status"]} Quantity: {quantity_remaining}')
-                self.send_bot_msg(f'TCL 55" in stock!! Status: {shipping["status"]}: {quantity_remaining} left.'
-                    f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
+                if BB_PICKUP_CHECK: 
+                    if product.pickup_status == 'InStock':
+                        msg_content = product.check_pickup()
+                        log.warning(msg_content)
+                        self.send_bot_msg(msg_content)
+                    else:
+                        msg_content = product.check_pickup()
+                        log.info(msg_content)
+                
+        except Exception as e:
+            log.info(f'Bestbuy TCL 55" info error...\n {e}')
+  
+        # try:
+        #     availabilities = response.json['availabilities'][0]
+
+        #     shipping = availabilities['shipping']
+        #     pickup = availabilities['pickup']
+        #     sku = availabilities['sku']
+        #     seller_id = availabilities['sellerId']
+
+        #     quantity_remaining = shipping['quantityRemaining']
+        #     if quantity_remaining > 0:
+        #         log.info(f'TCL 55\" IN STOCK!!! Status: {shipping["status"]} Quantity: {quantity_remaining}')
+        #         self.send_bot_msg(f'TCL 55" in stock!! Status: {shipping["status"]}: {quantity_remaining} left.'
+        #             f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
             
-            elif pickup['status'] not in  ('OutOfStock', 'NotAvailable'):
-                locations = pickup['locations']
+        #     elif pickup['status'] not in  ('OutOfStock', 'NotAvailable'):
+        #         locations = pickup['locations']
 
-                locations_instock = [f'{location["name"]}: {location["quantityOnHand"]} left.' for location in locations if location['quantityOnHand'] > 0]
+        #         locations_instock = [f'{location["name"]}: {location["quantityOnHand"]} left.' for location in locations if location['quantityOnHand'] > 0]
 
-                msg_content = "\n".join(locations_instock)
+        #         msg_content = "\n".join(locations_instock)
 
-                log.info(f'TCL 55\" can Pick UP!! Status: {pickup["status"]}: {msg_content}')
-                self.send_bot_msg(f'TCL 55 can Pick Up!! Status: {pickup["status"]}: {msg_content}.'
-                    f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
+        #         log.info(f'TCL 55\" can Pick UP!! Status: {pickup["status"]}: {msg_content}')
+        #         self.send_bot_msg(f'TCL 55 can Pick Up!! Status: {pickup["status"]}: {msg_content}.'
+        #             f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
             
-            else:
-                log.info(f'TCL 55" NOT in stock...')
+        #     else:
+        #         log.info(f'TCL 55" NOT in stock...')
 
         except Exception as e:
             log.info(f'Bestbuy TCL 55" info error...\n {e}')
@@ -307,7 +351,42 @@ class BestBuyItem:
         self.sku = availabilities['sku']
         self.seller_id = availabilities['sellerId']
         self.shipping_quantity = self.shipping['quantityRemaining']
-        
+        self.shipping_status = self.shipping['status']
+        self.pickup_status = self.pickup['status']
+        self.sku_map = self.get_skus_map
+    
+    @property
+    def get_skus_map(self):
+        return {}
+
+    def check_shipping(self):
+        if self.shipping_quantity > 0:
+            msg_content = (
+                f'{self.sku} is {self.shipping_status} with seller {self.seller_id}. '
+                f'Quantity: {self.shipping_quantity}\n'
+                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
+            )
+
+            return msg_content
+        else:
+            return f'{self.sku} is {self.shipping_status} with Online seller {self.seller_id}.'
+
+    def check_pickup(self):
+        if self.pickup_status == 'InStock':
+            locations = self.pickup['locations']
+
+            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in locations if loc['quantityOnHand'] > 0]
+
+            locations_msg = "\n".join(locations_instock)
+
+            msg_content = (
+                f'{self.sku} has store PickUp {self.pickup_status}: {locations_msg}'
+                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
+            )
+
+            return msg_content
+        else:
+            return f'{self.sku} is {self.pickup_status} for PickUp.'
 
 
 # if __name__ == '__main__':
