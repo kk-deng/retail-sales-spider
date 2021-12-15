@@ -17,6 +17,7 @@ class FileReadWrite:
         self.MONGO_USER_NAME = self.__import_keys["MONGO_USER_NAME"]
         self.MONGO_USER_PASS = self.__import_keys["MONGO_USER_PASS"]
         self.mongodb_url = self.__import_keys['mongodb_url']
+        self.bby_cookies = self.__import_keys['bby_cookies']
         # self.ua = UserAgent(verify_ssl=False)
     
     @property
@@ -109,8 +110,16 @@ class FileReadWrite:
                         "bestbuy": {
                             "user-agent": random_ua,
                             "referer": 'https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336',
-                            "DNT": '1',
+                            "dnt": '1',
                             "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
+                            'authority': 'www.bestbuy.ca',
+                            'pragma': 'no-cache',
+                            'cache-control': 'no-cache',
+                            'accept': '*/*',
+                            'sec-fetch-site': 'same-origin',
+                            'sec-fetch-mode': 'cors',
+                            'sec-fetch-dest': 'empty',
+                            "Cookie": self.bby_cookies,
                         }
             }
         return ua_list

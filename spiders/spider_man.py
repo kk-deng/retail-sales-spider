@@ -33,7 +33,12 @@ class RfdSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
-        self.tcl_skus = "|".join(['15604563'])
+        self.tcl_skus = "|".join([
+            '15604563',
+            '15078017',
+            '15166285',
+            '15084753',
+        ])
 
     def start_callback(self):
         self.send_bot_msg('Bot started!')
