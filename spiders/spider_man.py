@@ -38,6 +38,7 @@ class RfdSpider(feapder.AirSpider):
             '15078017',
             '15166285',
             '15084753',
+            '14671247',
         ])
 
     def start_callback(self):
@@ -161,38 +162,6 @@ class RfdSpider(feapder.AirSpider):
                 
         except Exception as e:
             log.info(f'Bestbuy TCL 55" info error...\n {e}')
-  
-        # try:
-        #     availabilities = response.json['availabilities'][0]
-
-        #     shipping = availabilities['shipping']
-        #     pickup = availabilities['pickup']
-        #     sku = availabilities['sku']
-        #     seller_id = availabilities['sellerId']
-
-        #     quantity_remaining = shipping['quantityRemaining']
-        #     if quantity_remaining > 0:
-        #         log.info(f'TCL 55\" IN STOCK!!! Status: {shipping["status"]} Quantity: {quantity_remaining}')
-        #         self.send_bot_msg(f'TCL 55" in stock!! Status: {shipping["status"]}: {quantity_remaining} left.'
-        #             f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
-            
-        #     elif pickup['status'] not in  ('OutOfStock', 'NotAvailable'):
-        #         locations = pickup['locations']
-
-        #         locations_instock = [f'{location["name"]}: {location["quantityOnHand"]} left.' for location in locations if location['quantityOnHand'] > 0]
-
-        #         msg_content = "\n".join(locations_instock)
-
-        #         log.info(f'TCL 55\" can Pick UP!! Status: {pickup["status"]}: {msg_content}')
-        #         self.send_bot_msg(f'TCL 55 can Pick Up!! Status: {pickup["status"]}: {msg_content}.'
-        #             f'Link: https://www.bestbuy.ca/en-ca/product/tcl-6-series-55-4k-uhd-hdr-qled-mini-led-smart-google-tv-55r646-ca-2021/15604563')
-            
-        #     else:
-        #         log.info(f'TCL 55" NOT in stock...')
-
-        except Exception as e:
-            log.info(f'Bestbuy TCL 55" info error...\n {e}')
-
 
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
@@ -359,16 +328,30 @@ class BestBuyItem:
         self.shipping_status = self.shipping['status']
         self.pickup_status = self.pickup['status']
         self.sku_map = self.get_skus_map
-    
+        self.pickup_locations = self.good_pickup_locations
+
     @property
     def get_skus_map(self):
         return {}
 
+    @property
+    def good_pickup_locations(self) -> List[dict]:
+        locations = self.pickup.get('locations')
+        
+        if len(locations) == 0:
+            return []
+        else:
+            return [loc for loc in locations if loc['quantityOnHand'] > 0]
+
     def check_shipping(self):
         if self.shipping_quantity > 0:
+            name = self.check_product_info.name
+            sale_price = self.check_product_info.salePrice
+
             msg_content = (
+                f'Name: {name} \n'
                 f'{self.sku} is {self.shipping_status} with seller {self.seller_id}. '
-                f'Quantity: {self.shipping_quantity}\n'
+                f'Quantity: {self.shipping_quantity}, Price: ${sale_price}\n'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
             )
 
@@ -378,22 +361,48 @@ class BestBuyItem:
 
     def check_pickup(self):
         if self.pickup_status == 'InStock':
-            locations = self.pickup['locations']
+            name = self.check_product_info.name
+            sale_price = self.check_product_info.salePrice
 
-            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in locations if loc['quantityOnHand'] > 0]
+            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
 
             locations_msg = "\n".join(locations_instock)
 
             msg_content = (
-                f'{self.sku} has store PickUp {self.pickup_status}: {locations_msg}'
+                f'Name: {name} \n'
+                f'{self.sku} has store PickUp {self.pickup_status}, Price: ${sale_price}: {locations_msg}'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
             )
 
             return msg_content
         else:
             return f'{self.sku} is {self.pickup_status} for PickUp.'
-
-
+    
+    @property
+    def check_product_info(self):
+        response = feapder.Request(
+            url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
+            params= {
+                "currentRegion": "ON",
+                "lang": "en-CA",
+                "include": "all"
+            },
+            headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
+        ) \
+        .get_response()
+        print(response.json.get('name'))
+        target_keys = [
+            'name', 
+            'regularPrice', 
+            'salePrice', 
+            'saleStartDate',
+            'SaleEndDate',
+            'upcNumber',
+        ]
+        
+        return {key: response.json.get(key) for key in target_keys}
+        
+        
 # if __name__ == '__main__':
 #     spider = RfdSpider(thread_count=10)
 #     spider.start()
