@@ -38,7 +38,6 @@ class RfdSpider(feapder.AirSpider):
             '15078017',
             '15166285',
             '15084753',
-            '14671247',
         ])
 
     def start_callback(self):
@@ -345,13 +344,15 @@ class BestBuyItem:
 
     def check_shipping(self):
         if self.shipping_quantity > 0:
-            name = self.check_product_info.name
-            sale_price = self.check_product_info.salePrice
+            product_info = self.check_product_info
+            name = product_info['name']
+            sale_price = product_info['salePrice']
+            regular_price = product_info['regularPrice']
 
             msg_content = (
                 f'Name: {name} \n'
-                f'{self.sku} is {self.shipping_status} with seller {self.seller_id}. '
-                f'Quantity: {self.shipping_quantity}, Price: ${sale_price}\n'
+                f'({self.sku}) is {self.shipping_status} with seller {self.seller_id}. '
+                f'Quantity: {self.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
             )
 
@@ -361,8 +362,10 @@ class BestBuyItem:
 
     def check_pickup(self):
         if self.pickup_status == 'InStock':
-            name = self.check_product_info.name
-            sale_price = self.check_product_info.salePrice
+            product_info = self.check_product_info
+            name = product_info['name']
+            sale_price = product_info['salePrice']
+            regular_price = product_info['regularPrice']
 
             locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
 
@@ -370,7 +373,7 @@ class BestBuyItem:
 
             msg_content = (
                 f'Name: {name} \n'
-                f'{self.sku} has store PickUp {self.pickup_status}, Price: ${sale_price}: {locations_msg}'
+                f'({self.sku}) has store PickUp {self.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
             )
 
@@ -380,7 +383,7 @@ class BestBuyItem:
     
     @property
     def check_product_info(self):
-        response = feapder.Request(
+        response_dict = feapder.Request(
             url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
             params= {
                 "currentRegion": "ON",
@@ -389,18 +392,18 @@ class BestBuyItem:
             },
             headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
         ) \
-        .get_response()
-        print(response.json.get('name'))
+        .get_response().json
+
         target_keys = [
-            'name', 
+            'name',
             'regularPrice', 
             'salePrice', 
             'saleStartDate',
             'SaleEndDate',
             'upcNumber',
         ]
-        
-        return {key: response.json.get(key) for key in target_keys}
+
+        return {key: response_dict.get(key) for key in target_keys}
         
         
 # if __name__ == '__main__':
