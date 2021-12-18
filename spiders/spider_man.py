@@ -35,6 +35,7 @@ class RfdSpider(feapder.AirSpider):
         self.random_header = self.file_operator.create_random_header
         self.tcl_skus = "|".join([
             '15604563',
+            '15480289',
             '15078017',
             '15166285',
             '15084753',
@@ -200,6 +201,7 @@ class RfdSpider(feapder.AirSpider):
                 item.reply_count = posts
                 item.view_count = views
                 item.topic_link = topic_title_link
+                upvotes_per_min = upvotes/elapsed_mins
 
                 # Find the same thread_id in MongoDB
                 db_documents = self.db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
@@ -219,7 +221,8 @@ class RfdSpider(feapder.AirSpider):
                 # Collect the msg sending conditions, any of them is True
                 sendmsg_conditions_1 = [
                     (upvotes >= 9), 
-                    (any(boolean_watchlist))
+                    (any(boolean_watchlist)),
+                    (upvotes/elapsed_mins >= 0.4)
                 ]
                 sendmsg_conditions_2 = [(upvotes >= 30),]
 
@@ -285,10 +288,11 @@ class RfdSpider(feapder.AirSpider):
         upvotes_per_min = upvotes/elapsed_mins
         topic_title = item_dict["topic_title"]
         topic_link = item_dict["topic_link"]
+        retailer_name = item_dict["retailer_name"]
 
         msg_content = f'{watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago ' \
             f'[{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): ' \
-            f'{topic_title}. Link: {topic_link}'
+            f'[{retailer_name.strip("[]")}] {topic_title}. Link: {topic_link}'
         
         return self.send_bot_msg(msg_content)
     
