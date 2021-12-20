@@ -12,6 +12,7 @@ class FileReadWrite:
         self.watchlist_csv_path = 'resources\watchlist.csv'
         self.token = self.__import_keys['token']
         self.chat_id = self.__import_keys['chat_id']
+        self.channel_id = self.__import_keys['channel_id']
         self.MONGO_IP = self.__import_keys["MONGO_IP"]
         self.MONGO_DB = self.__import_keys["MONGO_DB"]
         self.MONGO_USER_NAME = self.__import_keys["MONGO_USER_NAME"]
