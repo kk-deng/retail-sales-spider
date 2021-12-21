@@ -1,7 +1,7 @@
 import re
 
 
-def escape_markdown(text: str, version: int = 2, entity_type: str = None) -> str:
+def escape_markdown(text: str, version: int = 1, entity_type: str = None) -> str:
     if int(version) == 1:
         escape_chars = r'_*`['
     elif int(version) == 2:

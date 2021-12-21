@@ -15,7 +15,7 @@ import feapder
 from feapder.utils.log import log
 from items import *
 from tools import *
-
+from utils.helpers import escape_markdown
 import telegram
 
 from feapder.db.mongodb import MongoDB
@@ -42,10 +42,10 @@ class RfdSpider(feapder.AirSpider):
         ])
 
     def start_callback(self):
-        self.send_bot_msg('Bot started!')
+        self.send_bot_msg('Bot started')
     
     def end_callback(self):
-        self.send_bot_msg('Bot Stopped...!')
+        self.send_bot_msg('Bot Stopped...')
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -184,7 +184,7 @@ class RfdSpider(feapder.AirSpider):
 
             record_conditions = [
                 (elapsed_mins <= 120), 
-                (elapsed_mins <= 240 and upvotes >= 40)
+                (elapsed_mins <= 240 and upvotes >= 30)
             ]
 
             if any(record_conditions):
@@ -220,7 +220,7 @@ class RfdSpider(feapder.AirSpider):
 
                 # Collect the msg sending conditions, any of them is True
                 sendmsg_conditions_1 = [
-                    (upvotes >= 9), 
+                    (upvotes >= 8), 
                     (any(boolean_watchlist)),
                     (upvotes/elapsed_mins >= 0.4)
                 ]
@@ -229,7 +229,7 @@ class RfdSpider(feapder.AirSpider):
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
                     (any(sendmsg_conditions_2) and msg_sent_counter < 2):
-                    sent = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}NEW!')
+                    sent = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}*NEW*')
                     if sent:
                         msg_sent_counter += 1  # Record the sending count
 
@@ -280,7 +280,7 @@ class RfdSpider(feapder.AirSpider):
         return topictitle_retailer
     
     def send_text_msg(self, item_dict, **kwargs):
-        watchlist_str = kwargs.get('watchlist', 'Hot')
+        watchlist_str = kwargs.get('watchlist', '*Hot*')
 
         # Get strings from item_dict
         elapsed_mins = item_dict["elapsed_mins"]
@@ -290,16 +290,68 @@ class RfdSpider(feapder.AirSpider):
         topic_link = item_dict["topic_link"]
         retailer_name = item_dict["retailer_name"]
 
-        msg_content = f'{watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago ' \
-            f'[{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): ' \
-            f'[{retailer_name.strip("[]")}] {topic_title}. Link: {topic_link}'
+        main_content = (
+            f'`Deal`: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+            f'`Votes`: *{upvotes}* Ups ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'`Title`: _({retailer_name.strip("()")})_ {escape_markdown(topic_title)} \n'
+        )
+
+        msg_content = (
+            main_content +
+            f'[Click to open Deal link]({topic_link})'
+        )
+
+        # msg_content = (
+        #     f'{escape_markdown(watchlist_str)} @{escape_markdown("{:.2f}".format(elapsed_mins))}mins ago\n'
+        #     f'[{upvotes} Votes] ({escape_markdown("{:.2f}".format(upvotes_per_min))}/min):'
+        #     f'[{escape_markdown(retailer_name.strip("[]"))}] {escape_markdown(topic_title)}. \n'
+        #     f'Link: {escape_markdown(topic_link, entity_type="text_link")}'
+        # )
+
+        # msg_content = f"""
+        # {watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago 
+        # [{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): 
+        # [{retailer_name.strip("[]")}] {topic_title}. \nLink: {topic_link}
+        # """
+
+        # msg_content = f"""
+        # `Deal`   : _{watchlist_str}_ @*{"{:.2f}".format(elapsed_mins)}*mins ago
+        # `Upvotes`: *{upvotes}* Votes (*{"{:.2f}".format(upvotes_per_min)}*/min)
+        # `Deal   `: *[{retailer_name.strip("[]")}]* ## {topic_title}
+        # `Link   `: [Click to topic]({topic_link})
+        # """
+        # msg_content = (
+        #     f'`Deal`   : _{watchlist_str}_ @*{"{:.2f}".format(elapsed_mins)}* mins ago \n'
+        #     f'`Upvotes`: *{upvotes}* Votes (*{"{:.2f}".format(upvotes_per_min)}* /min) \n'
+        #     f'`Deal   `: *[{retailer_name.strip("[]")}]* ## {topic_title} \n'
+        #     f'`Link   `: [Click to topic]({topic_link})'
+        # )
+
+        # msg_content = escape_markdown(msg_content)
         
-        return self.send_bot_msg(msg_content)
+        return self.send_bot_msg(msg_content, topic_link)
     
-    def send_bot_msg(self, content_msg: str) -> bool:
-        log.info(f'## Sending: {content_msg}')
+    def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
+        log_content = content_msg.replace("\n", "")
+        log.info(f'## Sending: {log_content}')
+        
+        if topic_link:
+            keyboard = [
+                [
+                    telegram.InlineKeyboardButton("Open Link", url=topic_link),
+                ],
+            ]
+            reply_markup = telegram.InlineKeyboardMarkup(keyboard)
+        else:
+            reply_markup = None
+        
         try:
-            self.bot.send_message(text=content_msg, chat_id=self.file_operator.chat_id)
+            self.bot.send_message(
+                text=content_msg, 
+                chat_id=self.file_operator.channel_id,
+                reply_markup=reply_markup,
+                parse_mode=telegram.ParseMode.MARKDOWN
+                )
             log.info('## Msg was sent successfully!')
             time.sleep(3)
             return True
@@ -317,7 +369,7 @@ class RfdSpider(feapder.AirSpider):
     def matched_keywords(boolean_watchlist: List[bool], watch_list: List[str]) -> str:
         if any(boolean_watchlist):
             matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
-            return f'[{"&".join(matches_list)}] '
+            return f'({"&".join(matches_list)}) '
         else:
             return ''
 
