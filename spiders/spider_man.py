@@ -7,7 +7,7 @@ Created on 2021-02-08 16:06:12
 @author: Boris
 """
 from typing import List, Set, Dict
-
+from functools import wraps
 from datetime import datetime, time as tm
 import time
 import random
@@ -64,11 +64,11 @@ class RfdSpider(feapder.AirSpider):
             now = datetime.now().time()
 
             # Lower the speed at night
-            if tm(1,00) <= now <= tm(2,59):
+            if tm(1,00) <= now <= tm(7,59):
                 time_gap = random.randrange(180, 300)
-            elif tm(3,00) <= now <= tm(7,00):
-                log.info('Task exiting...')
-                break
+            # elif tm(3,00) <= now <= tm(7,00):
+            #     log.info('Task exiting...')
+            #     break
             else:
                 time_gap = random.randrange(50, 70)
             
@@ -80,18 +80,18 @@ class RfdSpider(feapder.AirSpider):
             #     callback=self.parse_bb_tcl
             # )
 
-            yield feapder.Request(
-                url = "https://www.bestbuy.ca/ecomm-api/availability/products?",
-                params= {
-                    "accept": "application/vnd.bestbuy.standardproduct.v1+json",
-                    "accept-language": "en-CA",
-                    "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
-                    "postalCode": "L3T7T7",
-                    "skus": self.tcl_skus
-                },
-                payload={},
-                callback=self.parse_bb_tcl
-            )
+            # yield feapder.Request(
+            #     url = "https://www.bestbuy.ca/ecomm-api/availability/products?",
+            #     params= {
+            #         "accept": "application/vnd.bestbuy.standardproduct.v1+json",
+            #         "accept-language": "en-CA",
+            #         "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
+            #         "postalCode": "L3T7T7",
+            #         "skus": self.tcl_skus
+            #     },
+            #     payload={},
+            #     callback=self.parse_bb_tcl
+            # )
 
             # Only check costco in daytime
             # if tm(8,00) <= now <= tm(18,30):
@@ -290,47 +290,55 @@ class RfdSpider(feapder.AirSpider):
         topic_link = item_dict["topic_link"]
         retailer_name = item_dict["retailer_name"]
 
-        main_content = (
-            f'`Deal`: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'`Votes`: *{upvotes}* Ups ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'`Title`: _({retailer_name.strip("()")})_ {escape_markdown(topic_title)} \n'
-        )
-
         msg_content = (
-            main_content +
+            f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+            f'*Votes*: *{upvotes}* votes ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'*Title*: _({retailer_name.strip("()")})_ `{escape_markdown(topic_title)}` \n'
             f'[Click to open Deal link]({topic_link})'
         )
-
-        # msg_content = (
-        #     f'{escape_markdown(watchlist_str)} @{escape_markdown("{:.2f}".format(elapsed_mins))}mins ago\n'
-        #     f'[{upvotes} Votes] ({escape_markdown("{:.2f}".format(upvotes_per_min))}/min):'
-        #     f'[{escape_markdown(retailer_name.strip("[]"))}] {escape_markdown(topic_title)}. \n'
-        #     f'Link: {escape_markdown(topic_link, entity_type="text_link")}'
+        
+        # main_content = (
+        #     f'`Deal`: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+        #     f'`Votes`: *{upvotes}* Ups ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+        #     f'`Title`: _({retailer_name.strip("()")})_ {escape_markdown(topic_title)} \n'
         # )
 
-        # msg_content = f"""
-        # {watchlist_str} @{"{:.2f}".format(elapsed_mins)}mins ago 
-        # [{upvotes} Votes] ({"{:.2f}".format(upvotes_per_min)}/min): 
-        # [{retailer_name.strip("[]")}] {topic_title}. \nLink: {topic_link}
-        # """
-
-        # msg_content = f"""
-        # `Deal`   : _{watchlist_str}_ @*{"{:.2f}".format(elapsed_mins)}*mins ago
-        # `Upvotes`: *{upvotes}* Votes (*{"{:.2f}".format(upvotes_per_min)}*/min)
-        # `Deal   `: *[{retailer_name.strip("[]")}]* ## {topic_title}
-        # `Link   `: [Click to topic]({topic_link})
-        # """
         # msg_content = (
-        #     f'`Deal`   : _{watchlist_str}_ @*{"{:.2f}".format(elapsed_mins)}* mins ago \n'
-        #     f'`Upvotes`: *{upvotes}* Votes (*{"{:.2f}".format(upvotes_per_min)}* /min) \n'
-        #     f'`Deal   `: *[{retailer_name.strip("[]")}]* ## {topic_title} \n'
-        #     f'`Link   `: [Click to topic]({topic_link})'
+        #     main_content +
+        #     f'[Click to open Deal link]({topic_link})'
         # )
 
-        # msg_content = escape_markdown(msg_content)
+        # watchlist_str = escape_markdown(watchlist_str, version=2)
+        # elapsed_mins = item_dict["elapsed_mins"]
+        # upvotes = item_dict["upvotes"]
+        # upvotes_per_min = escape_markdown("{:.2f}".format(upvotes/elapsed_mins), version=2)
+        # elapsed_mins = escape_markdown("{:.2f}".format(elapsed_mins), version=2)
+        # retailer_name = item_dict["retailer_name"].strip("[]")
+        # topic_title = escape_markdown(item_dict["topic_title"], version=2)
+        # topic_link =  escape_markdown(item_dict["topic_link"], version=2, entity_type="text_link")
+        
+        # msg_content = (
+        #     f'`Deal`   : _{watchlist_str}_ @*{elapsed_mins}* mins ago\n'
+        #     f'`Upvotes`: *{upvotes}* Votes  `__{upvotes_per_min}/min__`\n'
+        #     f'`Deal`: `_{retailer_name}_` {topic_title}\n'
+        #     f'`Link`: [Click to open link]({topic_link})'
+        # )
         
         return self.send_bot_msg(msg_content, topic_link)
     
+    def send_action(action):
+        """Sends `action` while processing func command."""
+
+        def decorator(func):
+            @wraps(func)
+            def command_func(self, *args, **kwargs):
+                self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
+                return func(self,  *args, **kwargs)
+            return command_func
+        
+        return decorator
+
+    @send_action(telegram.ChatAction.TYPING)
     def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
         log_content = content_msg.replace("\n", "")
         log.info(f'## Sending: {log_content}')
