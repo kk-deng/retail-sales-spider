@@ -107,11 +107,8 @@ class RfdSpider(feapder.AirSpider):
                 time.sleep(time_gap)
 
     def validate(self, request, response):
-        if ('redflagdeals' in request.url) and (response.status_code != 200):
-            raise Exception("response code not 200")  # 重试
-
-        # if "哈哈" not in response.text:
-        #     return False # 抛弃当前请求
+        if response.status_code != 200:
+            raise Exception("Response code not 200")
 
     def parse_costco(self, request, response):
         status_code = response.status_code
@@ -293,20 +290,9 @@ class RfdSpider(feapder.AirSpider):
         msg_content = (
             f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
             f'*Votes*: *{upvotes}* votes ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'*Title*: _({retailer_name.strip("()")})_ `{escape_markdown(topic_title)}` \n'
+            f'*Title*: _({retailer_name.strip("()")})_ `{(topic_title)}` \n'
             f'[Click to open Deal link]({topic_link})'
         )
-        
-        # main_content = (
-        #     f'`Deal`: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-        #     f'`Votes`: *{upvotes}* Ups ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-        #     f'`Title`: _({retailer_name.strip("()")})_ {escape_markdown(topic_title)} \n'
-        # )
-
-        # msg_content = (
-        #     main_content +
-        #     f'[Click to open Deal link]({topic_link})'
-        # )
 
         # watchlist_str = escape_markdown(watchlist_str, version=2)
         # elapsed_mins = item_dict["elapsed_mins"]
