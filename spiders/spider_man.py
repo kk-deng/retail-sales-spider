@@ -21,7 +21,7 @@ import telegram
 from feapder.db.mongodb import MongoDB
 
 
-SCRAPE_COUNT = 800
+SCRAPE_COUNT = 1000
 BB_SHIPPING_CHECK = True
 BB_PICKUP_CHECK = False
 
@@ -42,10 +42,7 @@ class RfdSpider(feapder.AirSpider):
         ])
 
     def start_callback(self):
-        self.send_bot_msg('Bot started, unpin all messages...')
-        self.bot.unpin_all_chat_messages(
-            chat_id=self.file_operator.channel_id
-        )
+        self.send_bot_msg('Bot started...')
     
     def end_callback(self):
         self.send_bot_msg('Bot Stopped...')
@@ -340,7 +337,7 @@ class RfdSpider(feapder.AirSpider):
     def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
         log_content = content_msg.replace("\n", "")
         log.info(f'## Sending: {log_content}')
-        
+
         if topic_link:
             keyboard = [
                 [
