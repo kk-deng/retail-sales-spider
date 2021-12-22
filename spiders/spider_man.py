@@ -42,7 +42,10 @@ class RfdSpider(feapder.AirSpider):
         ])
 
     def start_callback(self):
-        self.send_bot_msg('Bot started')
+        self.send_bot_msg('Bot started, unpin all messages...')
+        self.bot.unpin_all_chat_messages(
+            chat_id=self.file_operator.channel_id
+        )
     
     def end_callback(self):
         self.send_bot_msg('Bot Stopped...')
@@ -221,13 +224,22 @@ class RfdSpider(feapder.AirSpider):
                     (any(boolean_watchlist)),
                     (upvotes/elapsed_mins >= 0.4)
                 ]
-                sendmsg_conditions_2 = [(upvotes >= 30),]
+                sendmsg_conditions_2 = [(upvotes >= 20),]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
                     (any(sendmsg_conditions_2) and msg_sent_counter < 2):
-                    sent = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}*NEW*')
-                    if sent:
+                    returned_msg = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}*NEW*')
+                    if returned_msg:
+                        # If a deal has high upvotes, pin the msg in the channel
+                        if any(sendmsg_conditions_2):
+                            pin_message_id = returned_msg['message_id']
+
+                            self.bot.pin_chat_message(
+                                chat_id=self.file_operator.channel_id,
+                                message_id=pin_message_id
+                            )
+
                         msg_sent_counter += 1  # Record the sending count
 
                 item.msg_sent_cnt = msg_sent_counter
@@ -340,7 +352,7 @@ class RfdSpider(feapder.AirSpider):
             reply_markup = None
         
         try:
-            self.bot.send_message(
+            returned_msg = self.bot.send_message(
                 text=content_msg, 
                 chat_id=self.file_operator.channel_id,
                 reply_markup=reply_markup,
@@ -348,7 +360,7 @@ class RfdSpider(feapder.AirSpider):
                 )
             log.info('## Msg was sent successfully!')
             time.sleep(3)
-            return True
+            return returned_msg
         except Exception as e:
             log.info(f'## Msg failed sending with error:\n{e}')
             return False
