@@ -33,13 +33,6 @@ class RfdSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
-        self.tcl_skus = "|".join([
-            '15604563',
-            '15480289',
-            '15078017',
-            '15166285',
-            '15084753',
-        ])
 
     def start_callback(self):
         self.send_bot_msg('Bot started...')
@@ -49,12 +42,7 @@ class RfdSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        if 'redflagdeals' in request.url:
-            request.headers = self.random_header['rfd']
-        elif 'costco' in request.url:
-            request.headers = self.random_header['costco']
-        elif 'bestbuy' in request.url:
-            request.headers = self.random_header['bestbuy']
+        request.headers = self.random_header['rfd']
 
         return request
 
@@ -66,41 +54,10 @@ class RfdSpider(feapder.AirSpider):
             # Lower the speed at night
             if tm(1,00) <= now <= tm(7,59):
                 time_gap = random.randrange(180, 300)
-            # elif tm(3,00) <= now <= tm(7,00):
-            #     log.info('Task exiting...')
-            #     break
             else:
                 time_gap = random.randrange(50, 70)
             
             yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-            # yield feapder.Request("https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336", callback=self.parse_bb_ps5)
-            # yield feapder.Request(
-            #     url = "https://www.bestbuy.ca/ecomm-api/availability/products?accept=application%2Fvnd.bestbuy.standardproduct.v1%2Bjson&accept-language=en-CA&locations=956%7C237%7C937%7C200%7C943%7C927%7C932%7C62%7C965%7C931%7C57%7C985%7C617%7C977%7C203%7C223%7C949%7C795%7C916%7C544%7C910%7C938%7C925%7C954%7C207%7C202%7C926%7C959%7C622%7C233%7C930%7C613%7C245&postalCode=L3T7T7&skus=15604563",
-            #     payload={},
-            #     callback=self.parse_bb_tcl
-            # )
-
-            # yield feapder.Request(
-            #     url = "https://www.bestbuy.ca/ecomm-api/availability/products?",
-            #     params= {
-            #         "accept": "application/vnd.bestbuy.standardproduct.v1+json",
-            #         "accept-language": "en-CA",
-            #         "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
-            #         "postalCode": "L3T7T7",
-            #         "skus": self.tcl_skus
-            #     },
-            #     payload={},
-            #     callback=self.parse_bb_tcl
-            # )
-
-            # Only check costco in daytime
-            # if tm(8,00) <= now <= tm(18,30):
-            #     yield feapder.Request("https://www.costco.ca/playstation-5-console-bundle.product.100696941.html?langId=-24", 
-            #         callback=self.parse_costco)
-            #     yield feapder.Request("https://www.costco.ca/.product.100780734.html?langId=-24", 
-            #         callback=self.parse_costco)
-            #     yield feapder.Request("https://www.costco.ca/.product.5203665.html?langId=-24", 
-            #         callback=self.parse_costco)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -109,57 +66,7 @@ class RfdSpider(feapder.AirSpider):
     def validate(self, request, response):
         if response.status_code != 200:
             raise Exception("Response code not 200")
-
-    def parse_costco(self, request, response):
-        status_code = response.status_code
-        if status_code == 200 and 'IN_STOCK' in response.text:
-            log.info('Costco PS5 IN STOCK!!!')
-            self.send_bot_msg(f'Costco PS5 updated: {response.status_code}. '
-                f'Link: {request.url}')
-        else:
-            log.info(f'Costco PS5 not in stock...Status code: {status_code}')
     
-    def parse_bb_ps5(self, request, response):
-        add_to_cart_btn = response.xpath('//*[@id="test"]/button[not(@disabled)]')
-        disabled_btn = response.xpath('//*[@id="test"]/button[@disabled]')
-
-        if len(add_to_cart_btn) > 0:
-            log.info('Bestbuy PS5 IN STOCK!!!')
-            self.send_bot_msg(f'Bestbuy PS5 updated {add_to_cart_btn}.'
-                f'Link: {request.url}')
-        else:
-            log.info(f'Bestbuy PS5 not in stock... {disabled_btn}')
-    
-    def parse_bb_tcl(self, request, response):
-        response_json = response.json
-
-        availabilities = response_json.get('availabilities')
-
-        try:
-            for availability in availabilities:
-                product = BestBuyItem(availability)
-
-                if BB_SHIPPING_CHECK:
-                    if product.shipping_status == 'InStock':
-                        msg_content = product.check_shipping()
-                        log.warning(msg_content)
-                        self.send_bot_msg(msg_content)
-                    else:
-                        msg_content = product.check_shipping()
-                        log.info(msg_content)
-
-                if BB_PICKUP_CHECK: 
-                    if product.pickup_status == 'InStock':
-                        msg_content = product.check_pickup()
-                        log.warning(msg_content)
-                        self.send_bot_msg(msg_content)
-                    else:
-                        msg_content = product.check_pickup()
-                        log.info(msg_content)
-                
-        except Exception as e:
-            log.info(f'Bestbuy TCL 55" info error...\n {e}')
-
     def parse(self, request, response):
         topic_list = response.bs4().find_all('li', class_='row topic')
 
@@ -185,12 +92,11 @@ class RfdSpider(feapder.AirSpider):
             ]
 
             if any(record_conditions):
-                item = spider_data_item.SpiderDataItem()  # 声明一个item
+                item = spider_data_item.SpiderDataItem()  # Define an item to save to the database
 
-                # item.thread_id = thread_id  # 给item属性赋值
                 item.thread_id = thread_id
-                item.topic_title = topic_title  # 给item属性赋值
-                item.upvotes = upvotes  # 给item属性赋值
+                item.topic_title = topic_title
+                item.upvotes = upvotes
                 item.elapsed_mins = elapsed_mins
                 item.retailer_name = topictitle_retailer
                 item.first_post_time_obj = first_post_time_obj
@@ -302,22 +208,6 @@ class RfdSpider(feapder.AirSpider):
             f'*Title*: _({retailer_name.strip("()")})_ `{(topic_title)}` \n'
             f'[Click to open Deal link]({topic_link})'
         )
-
-        # watchlist_str = escape_markdown(watchlist_str, version=2)
-        # elapsed_mins = item_dict["elapsed_mins"]
-        # upvotes = item_dict["upvotes"]
-        # upvotes_per_min = escape_markdown("{:.2f}".format(upvotes/elapsed_mins), version=2)
-        # elapsed_mins = escape_markdown("{:.2f}".format(elapsed_mins), version=2)
-        # retailer_name = item_dict["retailer_name"].strip("[]")
-        # topic_title = escape_markdown(item_dict["topic_title"], version=2)
-        # topic_link =  escape_markdown(item_dict["topic_link"], version=2, entity_type="text_link")
-        
-        # msg_content = (
-        #     f'`Deal`   : _{watchlist_str}_ @*{elapsed_mins}* mins ago\n'
-        #     f'`Upvotes`: *{upvotes}* Votes  `__{upvotes_per_min}/min__`\n'
-        #     f'`Deal`: `_{retailer_name}_` {topic_title}\n'
-        #     f'`Link`: [Click to open link]({topic_link})'
-        # )
         
         return self.send_bot_msg(msg_content, topic_link)
     
@@ -376,95 +266,6 @@ class RfdSpider(feapder.AirSpider):
         else:
             return ''
 
-class BestBuyItem:
-    def __init__(self, availabilities):
-        self.shipping = availabilities['shipping']
-        self.pickup = availabilities['pickup']
-        self.sku = availabilities['sku']
-        self.seller_id = availabilities['sellerId']
-        self.shipping_quantity = self.shipping['quantityRemaining']
-        self.shipping_status = self.shipping['status']
-        self.pickup_status = self.pickup['status']
-        self.sku_map = self.get_skus_map
-        self.pickup_locations = self.good_pickup_locations
-
-    @property
-    def get_skus_map(self):
-        return {}
-
-    @property
-    def good_pickup_locations(self) -> List[dict]:
-        locations = self.pickup.get('locations')
-        
-        if len(locations) == 0:
-            return []
-        else:
-            return [loc for loc in locations if loc['quantityOnHand'] > 0]
-
-    def check_shipping(self):
-        if self.shipping_quantity > 0:
-            product_info = self.check_product_info
-            name = product_info['name']
-            sale_price = product_info['salePrice']
-            regular_price = product_info['regularPrice']
-
-            msg_content = (
-                f'Name: {name} \n'
-                f'({self.sku}) is {self.shipping_status} with seller {self.seller_id}. '
-                f'Quantity: {self.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
-                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-            )
-
-            return msg_content
-        else:
-            return f'{self.sku} is {self.shipping_status} with Online seller {self.seller_id}.'
-
-    def check_pickup(self):
-        if self.pickup_status == 'InStock':
-            product_info = self.check_product_info
-            name = product_info['name']
-            sale_price = product_info['salePrice']
-            regular_price = product_info['regularPrice']
-
-            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
-
-            locations_msg = "\n".join(locations_instock)
-
-            msg_content = (
-                f'Name: {name} \n'
-                f'({self.sku}) has store PickUp {self.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
-                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-            )
-
-            return msg_content
-        else:
-            return f'{self.sku} is {self.pickup_status} for PickUp.'
-    
-    @property
-    def check_product_info(self):
-        response_dict = feapder.Request(
-            url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
-            params= {
-                "currentRegion": "ON",
-                "lang": "en-CA",
-                "include": "all"
-            },
-            headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
-        ) \
-        .get_response().json
-
-        target_keys = [
-            'name',
-            'regularPrice', 
-            'salePrice', 
-            'saleStartDate',
-            'SaleEndDate',
-            'upcNumber',
-        ]
-
-        return {key: response_dict.get(key) for key in target_keys}
-        
-        
 # if __name__ == '__main__':
 #     spider = RfdSpider(thread_count=10)
 #     spider.start()
