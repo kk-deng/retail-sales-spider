@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2021-02-08 16:06:12
+Created on 2021-11-29 16:06:12
 ---------
 @summary:
 ---------
-@author: Boris
+@author: Kelvin
 """
 from typing import List, Set, Dict
 from functools import wraps
@@ -43,22 +43,18 @@ class RfdSpider(feapder.AirSpider):
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
         request.headers = self.random_header['rfd']
-
         return request
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
-            # Now time
-            now = datetime.now().time()
+            yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
 
-            # Lower the speed at night
-            if tm(1,00) <= now <= tm(7,59):
+            # Lower the speed at night by checking the now time
+            if tm(1,00) <= datetime.now().time() <= tm(7,59):
                 time_gap = random.randrange(180, 300)
             else:
                 time_gap = random.randrange(50, 70)
             
-            yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
-
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
