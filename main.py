@@ -13,4 +13,4 @@ if __name__ == "__main__":
     spider = spider_man.RfdSpider()
     bb_spider = bestbuy_spider.BBSpider()
     spider.start()
-    # bb_spider.start()
+    bb_spider.start()
