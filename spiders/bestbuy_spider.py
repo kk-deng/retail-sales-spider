@@ -27,17 +27,23 @@ BB_PICKUP_CHECK = False
 
 
 class BBSpider(feapder.AirSpider):
+    __custom_setting__ = dict(
+        MONGO_DB = "bestbuy",
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
-        self.tcl_skus = "|".join([
+        self.list_skus = "|".join([
             '15604563',
             '15480289',
             '15078017',
             '15166285',
             '15084753',
+            '14936769',
+            '14936767',
         ])
 
     def download_midware(self, request):
@@ -67,21 +73,20 @@ class BBSpider(feapder.AirSpider):
                     "accept-language": "en-CA",
                     "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
                     "postalCode": "L3T7T7",
-                    "skus": self.tcl_skus
+                    "skus": self.list_skus
                 },
                 payload={},
-                callback=self.parse_bb_tcl
             )
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## Bestbuy running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
 
-    # def validate(self, request, response):
-    #     if ('redflagdeals' in request.url) and (response.status_code != 200):
-    #         raise Exception("response code not 200")  # 重试
+    def validate(self, request, response):
+        if response.status_code != 200:
+            raise Exception("response code not 200")
     
-    def parse_bb_tcl(self, request, response):
+    def parse(self, request, response):
         response_json = response.json
 
         availabilities = response_json.get('availabilities')
@@ -89,8 +94,10 @@ class BBSpider(feapder.AirSpider):
         try:
             for availability in availabilities:
                 product = BestBuyItem(availability)
+                
 
                 if BB_SHIPPING_CHECK:
+
                     if product.shipping_status == 'InStock':
                         msg_content = product.check_shipping()
                         log.warning(msg_content)
@@ -119,7 +126,7 @@ class BBSpider(feapder.AirSpider):
             self.bot.send_message(
                 text=content_msg, 
                 chat_id=self.file_operator.channel_id,
-                reply_markup=reply_markup,
+                # reply_markup=reply_markup,
                 # parse_mode=telegram.ParseMode.MARKDOWN
                 )
             log.info('## Msg was sent successfully!')
@@ -128,6 +135,7 @@ class BBSpider(feapder.AirSpider):
         except Exception as e:
             log.info(f'## Msg failed sending with error:\n{e}')
             return False
+
 
 class BestBuyItem:
     def __init__(self, availabilities):
@@ -138,7 +146,7 @@ class BestBuyItem:
         self.shipping_quantity = self.shipping['quantityRemaining']
         self.shipping_status = self.shipping['status']
         self.pickup_status = self.pickup['status']
-        self.sku_map = self.get_skus_map
+        # self.sku_map = self.get_skus_map
         self.pickup_locations = self.good_pickup_locations
 
     @property
