@@ -6,20 +6,19 @@ Created on 2021-02-08 16:06:12
 ---------
 @author: Boris
 """
-from typing import List, Set, Dict
-
-from datetime import datetime, time as tm
-import time
 import random
+import time
+from datetime import datetime
+from datetime import time as tm
+from typing import Dict, List, Set
+
 import feapder
+import telegram
+from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
 from items import *
 from tools import *
 from utils.helpers import escape_markdown
-import telegram
-
-from feapder.db.mongodb import MongoDB
-
 
 SCRAPE_COUNT = 800
 BB_SHIPPING_CHECK = True
@@ -27,10 +26,6 @@ BB_PICKUP_CHECK = False
 
 
 class BBSpider(feapder.AirSpider):
-    __custom_setting__ = dict(
-        MONGO_DB = "bestbuy",
-    )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
@@ -39,9 +34,9 @@ class BBSpider(feapder.AirSpider):
         self.list_skus = "|".join([
             '15604563',
             '15480289',
-            '15078017',
-            '15166285',
-            '15084753',
+            # '15078017',
+            # '15166285',
+            # '15084753',
             '14936769',
             '14936767',
         ])
@@ -94,11 +89,22 @@ class BBSpider(feapder.AirSpider):
         try:
             for availability in availabilities:
                 product = BestBuyItem(availability)
-                
+                now = datetime.now()
 
+                # Instantiate one item for mongoDB
+                item = bestbuy_item.BbShippingItem()
+                # item.identifier = f's-{product.sku}-{product.shipping_status}-{product.shipping_quantity}'
+                item.sku = product.sku
+                item.timestamp = now
+                item.quantity = product.shipping_quantity
+                item.status = product.shipping_status
+                item.stock_type = 'shipping'
+                item.seller_id = product.seller_id
+
+                yield item
                 if BB_SHIPPING_CHECK:
-
-                    if product.shipping_status == 'InStock':
+                    if product.shipping_status == 'InStock' and \
+                        product.shipping_quantity <= 5:
                         msg_content = product.check_shipping()
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
@@ -141,7 +147,7 @@ class BestBuyItem:
     def __init__(self, availabilities):
         self.shipping = availabilities['shipping']
         self.pickup = availabilities['pickup']
-        self.sku = availabilities['sku']
+        self.sku = int(availabilities['sku'])
         self.seller_id = availabilities['sellerId']
         self.shipping_quantity = self.shipping['quantityRemaining']
         self.shipping_status = self.shipping['status']
