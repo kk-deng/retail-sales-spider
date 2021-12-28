@@ -31,8 +31,8 @@ class BBSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
-        self.products = {}
-        self.list_skus = [
+        self.products_dict = {}
+        self.skus_list = [
             '15604563',
             '15480289',
             # '15078017',
@@ -41,7 +41,7 @@ class BBSpider(feapder.AirSpider):
             '14936769',
             '14936767',
         ]
-        self.str_skus = "|".join(self.list_skus)
+        self.skus_str = "|".join(self.skus_list)
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -51,7 +51,7 @@ class BBSpider(feapder.AirSpider):
 
     def start_requests(self):
         log.info('Fetching product info...')
-        for product in self.list_skus:
+        for product in self.skus_list:
             yield feapder.Request(
                 url = f"https://www.bestbuy.ca/api/v2/json/product/{product}?",
                 params= {
@@ -59,13 +59,12 @@ class BBSpider(feapder.AirSpider):
                     "lang": "en-CA",
                     "include": "all"
                 },
-                headers = file_input_output.FileReadWrite().create_random_header['bestbuy'],
                 product_sku = product,
-                callbacks = self.parse_product_info
+                callback = self.parse_product_info
             )
             time.sleep(3)
 
-        log.info(f'Fetched product info:\n{self.products}')
+        log.info(f'Fetched product info:\n{self.products_dict}')
 
         for i in range(1, SCRAPE_COUNT):
             # Now time
@@ -87,7 +86,7 @@ class BBSpider(feapder.AirSpider):
                     "accept-language": "en-CA",
                     "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
                     "postalCode": "L3T7T7",
-                    "skus": self.str_skus
+                    "skus": self.skus_str
                 },
                 payload={},
             )
@@ -97,7 +96,7 @@ class BBSpider(feapder.AirSpider):
                 time.sleep(time_gap)
 
     def validate(self, request, response):
-        if response.status_code != 200:
+        if 'availability' in request.url and response.status_code != 200:
             raise Exception("response code not 200")
     
     def parse_product_info(self, request, response):
@@ -113,7 +112,7 @@ class BBSpider(feapder.AirSpider):
             'upcNumber',
         ]
 
-        self.products[product_sku] = {key: response_json.get(key) for key in target_keys}
+        self.products_dict[product_sku] = {key: response_json.get(key) for key in target_keys}
 
     def parse(self, request, response):
         response_json = response.json
@@ -158,6 +157,42 @@ class BBSpider(feapder.AirSpider):
         except Exception as e:
             log.info(f'Bestbuy info error...\n {e}')
     
+    def resolve_shipping_msg(self, product):
+        if product.shipping_quantity > 0:
+            product_info = self.products_dict[product.sku]
+            name = product_info['name']
+            sale_price = product_info['salePrice']
+            regular_price = product_info['regularPrice']
+
+            msg_content = (
+                f'Name: {name} \n'
+                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. '
+                f'Quantity: {product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
+                f'Link: https://www.bestbuy.ca/en-ca/product/{product.sku}'
+            )
+
+            return msg_content
+        else:
+            return f'{product.sku} is {product.shipping_status} with Online seller {product.seller_id}.'
+
+    def resolve_shipping_msg(self, product):
+        if product.shipping_quantity > 0:
+            product_info = self.products[product.sku]
+            name = product_info['name']
+            sale_price = product_info['salePrice']
+            regular_price = product_info['regularPrice']
+
+            msg_content = (
+                f'Name: {name} \n'
+                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. '
+                f'Quantity: {product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
+                f'Link: https://www.bestbuy.ca/en-ca/product/{product.sku}'
+            )
+
+            return msg_content
+        else:
+            return f'{product.sku} is {product.shipping_status} with Online seller {product.seller_id}.'
+
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
         log.info(f'## Sending: {log_content}')
@@ -267,6 +302,7 @@ class BestBuyItem:
         return {key: response_dict.get(key) for key in target_keys}
         
         
-# if __name__ == '__main__':
-#     spider = RfdSpider(thread_count=10)
-#     spider.start()
+if __name__ == '__main__':
+    spider = BBSpider(thread_count=1)
+    spider.start()
+
