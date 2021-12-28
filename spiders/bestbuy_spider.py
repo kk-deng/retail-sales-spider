@@ -60,9 +60,12 @@ class BBSpider(feapder.AirSpider):
                     "include": "all"
                 },
                 headers = file_input_output.FileReadWrite().create_random_header['bestbuy'],
+                product_sku = product,
                 callbacks = self.parse_product_info
             )
             time.sleep(3)
+
+        log.info(f'Fetched product info:\n{self.products}')
 
         for i in range(1, SCRAPE_COUNT):
             # Now time
@@ -98,7 +101,19 @@ class BBSpider(feapder.AirSpider):
             raise Exception("response code not 200")
     
     def parse_product_info(self, request, response):
-        pass 
+        response_json = response.json
+        product_sku = request.product_sku
+
+        target_keys = [
+            'name',
+            'regularPrice', 
+            'salePrice', 
+            'saleStartDate',
+            'SaleEndDate',
+            'upcNumber',
+        ]
+
+        self.products[product_sku] = {key: response_json.get(key) for key in target_keys}
 
     def parse(self, request, response):
         response_json = response.json
