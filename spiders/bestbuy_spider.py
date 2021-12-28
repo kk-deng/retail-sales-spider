@@ -31,7 +31,8 @@ class BBSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
-        self.list_skus = "|".join([
+        self.products = {}
+        self.list_skus = [
             '15604563',
             '15480289',
             # '15078017',
@@ -39,7 +40,8 @@ class BBSpider(feapder.AirSpider):
             # '15084753',
             '14936769',
             '14936767',
-        ])
+        ]
+        self.str_skus = "|".join(self.list_skus)
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -48,6 +50,20 @@ class BBSpider(feapder.AirSpider):
         return request
 
     def start_requests(self):
+        log.info('Fetching product info...')
+        for product in self.list_skus:
+            yield feapder.Request(
+                url = f"https://www.bestbuy.ca/api/v2/json/product/{product}?",
+                params= {
+                    "currentRegion": "ON",
+                    "lang": "en-CA",
+                    "include": "all"
+                },
+                headers = file_input_output.FileReadWrite().create_random_header['bestbuy'],
+                callbacks = self.parse_product_info
+            )
+            time.sleep(3)
+
         for i in range(1, SCRAPE_COUNT):
             # Now time
             now = datetime.now().time()
@@ -56,8 +72,8 @@ class BBSpider(feapder.AirSpider):
             if tm(1,00) <= now <= tm(2,59):
                 time_gap = random.randrange(180, 300)
             elif tm(3,00) <= now <= tm(7,00):
-                log.info('Task exiting...')
-                break
+                log.info('Task paused...')
+                time_gap = 4*60*60
             else:
                 time_gap = random.randrange(50, 70)
             
@@ -68,7 +84,7 @@ class BBSpider(feapder.AirSpider):
                     "accept-language": "en-CA",
                     "locations": "956|237|937|200|943|927|932|62|965|931|57|985|617|203|949|795|916|544|910|938",
                     "postalCode": "L3T7T7",
-                    "skus": self.list_skus
+                    "skus": self.str_skus
                 },
                 payload={},
             )
@@ -81,6 +97,9 @@ class BBSpider(feapder.AirSpider):
         if response.status_code != 200:
             raise Exception("response code not 200")
     
+    def parse_product_info(self, request, response):
+        pass 
+
     def parse(self, request, response):
         response_json = response.json
 
@@ -149,6 +168,7 @@ class BestBuyItem:
         self.pickup = availabilities['pickup']
         self.sku = int(availabilities['sku'])
         self.seller_id = availabilities['sellerId']
+
         self.shipping_quantity = self.shipping['quantityRemaining']
         self.shipping_status = self.shipping['status']
         self.pickup_status = self.pickup['status']
