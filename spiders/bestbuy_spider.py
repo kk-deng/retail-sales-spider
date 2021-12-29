@@ -33,15 +33,15 @@ class BBSpider(feapder.AirSpider):
         self.random_header = self.file_operator.create_random_header
         self.products_dict = {}
         self.skus_list = [
-            '15604563',
-            '15480289',
-            # '15078017',
-            # '15166285',
-            # '15084753',
-            '14936769',
-            '14936767',
+            15604563,
+            15480289,
+            # 15078017,
+            # 15166285,
+            # 15084753,
+            14936769,
+            14936767,
         ]
-        self.skus_str = "|".join(self.skus_list)
+        self.skus_str = "|".join([str(sku) for sku in self.skus_list])
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -51,15 +51,15 @@ class BBSpider(feapder.AirSpider):
 
     def start_requests(self):
         log.info('Fetching product info...')
-        for product in self.skus_list:
+        for product_sku in self.skus_list:
             yield feapder.Request(
-                url = f"https://www.bestbuy.ca/api/v2/json/product/{product}?",
+                url = f"https://www.bestbuy.ca/api/v2/json/product/{product_sku}?",
                 params= {
                     "currentRegion": "ON",
                     "lang": "en-CA",
                     "include": "all"
                 },
-                product_sku = product,
+                product_sku = product_sku,
                 callback = self.parse_product_info
             )
             time.sleep(3)
@@ -135,23 +135,24 @@ class BBSpider(feapder.AirSpider):
                 item.seller_id = product.seller_id
 
                 yield item
+
                 if BB_SHIPPING_CHECK:
+                    msg_content = self.resolve_shipping_msg(product)
+
                     if product.shipping_status == 'InStock' and \
                         product.shipping_quantity <= 5:
-                        msg_content = product.check_shipping()
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
                     else:
-                        msg_content = product.check_shipping()
                         log.info(msg_content)
 
                 if BB_PICKUP_CHECK: 
+                    msg_content = self.resolve_pickup_msg(product)
+
                     if product.pickup_status == 'InStock':
-                        msg_content = product.check_pickup()
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
                     else:
-                        msg_content = product.check_pickup()
                         log.info(msg_content)
                 
         except Exception as e:
@@ -175,23 +176,26 @@ class BBSpider(feapder.AirSpider):
         else:
             return f'{product.sku} is {product.shipping_status} with Online seller {product.seller_id}.'
 
-    def resolve_shipping_msg(self, product):
-        if product.shipping_quantity > 0:
-            product_info = self.products[product.sku]
+    def resolve_pickup_msg(self, product):
+        if product.pickup_status == 'InStock':
+            product_info = self.products_dict[product.sku]
             name = product_info['name']
             sale_price = product_info['salePrice']
             regular_price = product_info['regularPrice']
 
+            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in product.good_pickup_locations]
+
+            locations_msg = "\n".join(locations_instock)
+
             msg_content = (
                 f'Name: {name} \n'
-                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. '
-                f'Quantity: {product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
+                f'({product.sku}) has store PickUp {product.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{product.sku}'
             )
 
             return msg_content
         else:
-            return f'{product.sku} is {product.shipping_status} with Online seller {product.seller_id}.'
+            return f'{self.sku} is {self.pickup_status} for PickUp.'
 
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
@@ -238,71 +242,70 @@ class BestBuyItem:
         else:
             return [loc for loc in locations if loc['quantityOnHand'] > 0]
 
-    def check_shipping(self):
-        if self.shipping_quantity > 0:
-            product_info = self.check_product_info
-            name = product_info['name']
-            sale_price = product_info['salePrice']
-            regular_price = product_info['regularPrice']
+    # def check_shipping(self):
+    #     if self.shipping_quantity > 0:
+    #         product_info = self.check_product_info
+    #         name = product_info['name']
+    #         sale_price = product_info['salePrice']
+    #         regular_price = product_info['regularPrice']
 
-            msg_content = (
-                f'Name: {name} \n'
-                f'({self.sku}) is {self.shipping_status} with seller {self.seller_id}. '
-                f'Quantity: {self.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
-                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-            )
+    #         msg_content = (
+    #             f'Name: {name} \n'
+    #             f'({self.sku}) is {self.shipping_status} with seller {self.seller_id}. '
+    #             f'Quantity: {self.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
+    #             f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
+    #         )
 
-            return msg_content
-        else:
-            return f'{self.sku} is {self.shipping_status} with Online seller {self.seller_id}.'
+    #         return msg_content
+    #     else:
+    #         return f'{self.sku} is {self.shipping_status} with Online seller {self.seller_id}.'
 
-    def check_pickup(self):
-        if self.pickup_status == 'InStock':
-            product_info = self.check_product_info
-            name = product_info['name']
-            sale_price = product_info['salePrice']
-            regular_price = product_info['regularPrice']
+    # def check_pickup(self):
+    #     if self.pickup_status == 'InStock':
+    #         product_info = self.check_product_info
+    #         name = product_info['name']
+    #         sale_price = product_info['salePrice']
+    #         regular_price = product_info['regularPrice']
 
-            locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
+    #         locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
 
-            locations_msg = "\n".join(locations_instock)
+    #         locations_msg = "\n".join(locations_instock)
 
-            msg_content = (
-                f'Name: {name} \n'
-                f'({self.sku}) has store PickUp {self.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
-                f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-            )
+    #         msg_content = (
+    #             f'Name: {name} \n'
+    #             f'({self.sku}) has store PickUp {self.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
+    #             f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
+    #         )
 
-            return msg_content
-        else:
-            return f'{self.sku} is {self.pickup_status} for PickUp.'
+    #         return msg_content
+    #     else:
+    #         return f'{self.sku} is {self.pickup_status} for PickUp.'
     
-    @property
-    def check_product_info(self):
-        response_dict = feapder.Request(
-            url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
-            params= {
-                "currentRegion": "ON",
-                "lang": "en-CA",
-                "include": "all"
-            },
-            headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
-        ) \
-        .get_response().json
+    # @property
+    # def check_product_info(self):
+    #     response_dict = feapder.Request(
+    #         url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
+    #         params= {
+    #             "currentRegion": "ON",
+    #             "lang": "en-CA",
+    #             "include": "all"
+    #         },
+    #         headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
+    #     ) \
+    #     .get_response().json
 
-        target_keys = [
-            'name',
-            'regularPrice', 
-            'salePrice', 
-            'saleStartDate',
-            'SaleEndDate',
-            'upcNumber',
-        ]
+    #     target_keys = [
+    #         'name',
+    #         'regularPrice', 
+    #         'salePrice', 
+    #         'saleStartDate',
+    #         'SaleEndDate',
+    #         'upcNumber',
+    #     ]
 
-        return {key: response_dict.get(key) for key in target_keys}
+    #     return {key: response_dict.get(key) for key in target_keys}
         
         
 if __name__ == '__main__':
     spider = BBSpider(thread_count=1)
     spider.start()
-
