@@ -50,7 +50,7 @@ class BBSpider(feapder.AirSpider):
         return request
 
     def start_requests(self):
-        log.info('Fetching product info...')
+        log.info('Fetching Bestbuy product info...')
         for product_sku in self.skus_list:
             yield feapder.Request(
                 url = f"https://www.bestbuy.ca/api/v2/json/product/{product_sku}?",
@@ -64,7 +64,13 @@ class BBSpider(feapder.AirSpider):
             )
             time.sleep(3)
 
-        log.info(f'Fetched product info:\n{self.products_dict}')
+        log.info('Fetched Bestbuy product info:')
+        for key, value in self.products_dict.items():
+            if value.get('name'):
+                values = ', '.join([f'{k}({v})' for k, v in value.items()])
+                log.info(f'SKU ({key}): {values}')
+            else:
+                log.warning(f'SKU ({key}) has no data from Bestbuy.')
 
         for i in range(1, SCRAPE_COUNT):
             # Now time
@@ -158,7 +164,7 @@ class BBSpider(feapder.AirSpider):
                         log.info(msg_content)
             
             if len(out_of_stock_dict) > 0:
-                oos_str = 'Out-of-stock SKUs: '
+                oos_str = 'OOS SKUs: '
                 for key, value in out_of_stock_dict.items():
                     oos_str += f'{key}: {value} |'
                 
