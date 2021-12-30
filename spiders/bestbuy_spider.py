@@ -33,7 +33,7 @@ class BBSpider(feapder.AirSpider):
         self.products_dict = {}
         self.skus_list = [
             15604563,
-            15480289,
+            15689336,
             14671247,
             # 15078017,
             # 15166285,
@@ -164,11 +164,9 @@ class BBSpider(feapder.AirSpider):
                         log.info(msg_content)
             
             if len(out_of_stock_dict) > 0:
-                oos_str = 'OOS SKUs: '
-                for key, value in out_of_stock_dict.items():
-                    oos_str += f'{key}: {value} |'
-                
-                log.info(oos_str)
+                values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
+                oos_msg = 'OOS SKUs: ' + ', '.join(values)
+                log.info(oos_msg)
                 
         except Exception as e:
             log.info(f'Bestbuy info error...\n {e}')
