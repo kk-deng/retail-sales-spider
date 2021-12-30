@@ -8,8 +8,7 @@ Created on 2021-02-08 16:06:12
 """
 import random
 import time
-from datetime import datetime
-from datetime import time as tm
+from datetime import datetime, time as tm
 from typing import Dict, List, Set
 
 import feapder
@@ -35,6 +34,7 @@ class BBSpider(feapder.AirSpider):
         self.skus_list = [
             15604563,
             15480289,
+            14671247,
             # 15078017,
             # 15166285,
             # 15084753,
@@ -119,6 +119,8 @@ class BBSpider(feapder.AirSpider):
 
         availabilities = response_json.get('availabilities')
 
+        out_of_stock_dict = {}
+
         try:
             for availability in availabilities:
                 product = BestBuyItem(availability)
@@ -139,12 +141,12 @@ class BBSpider(feapder.AirSpider):
                 if BB_SHIPPING_CHECK:
                     msg_content = self.resolve_shipping_msg(product)
 
-                    if product.shipping_status == 'InStock' and \
+                    if product.shipping_status in ['InStock', 'BackOrder'] and \
                         product.shipping_quantity <= 5:
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
                     else:
-                        log.info(msg_content)
+                        out_of_stock_dict[product.sku] = f'{product.shipping_status}({str(product.shipping_quantity)})'
 
                 if BB_PICKUP_CHECK: 
                     msg_content = self.resolve_pickup_msg(product)
@@ -154,6 +156,13 @@ class BBSpider(feapder.AirSpider):
                         self.send_bot_msg(msg_content)
                     else:
                         log.info(msg_content)
+            
+            if len(out_of_stock_dict) > 0:
+                oos_str = 'Out-of-stock SKUs: '
+                for key, value in out_of_stock_dict.items():
+                    oos_str += f'{key}: {value} |'
+                
+                log.info(oos_str)
                 
         except Exception as e:
             log.info(f'Bestbuy info error...\n {e}')
@@ -242,69 +251,6 @@ class BestBuyItem:
         else:
             return [loc for loc in locations if loc['quantityOnHand'] > 0]
 
-    # def check_shipping(self):
-    #     if self.shipping_quantity > 0:
-    #         product_info = self.check_product_info
-    #         name = product_info['name']
-    #         sale_price = product_info['salePrice']
-    #         regular_price = product_info['regularPrice']
-
-    #         msg_content = (
-    #             f'Name: {name} \n'
-    #             f'({self.sku}) is {self.shipping_status} with seller {self.seller_id}. '
-    #             f'Quantity: {self.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
-    #             f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-    #         )
-
-    #         return msg_content
-    #     else:
-    #         return f'{self.sku} is {self.shipping_status} with Online seller {self.seller_id}.'
-
-    # def check_pickup(self):
-    #     if self.pickup_status == 'InStock':
-    #         product_info = self.check_product_info
-    #         name = product_info['name']
-    #         sale_price = product_info['salePrice']
-    #         regular_price = product_info['regularPrice']
-
-    #         locations_instock = [f'({loc["locationKey"]}) {loc["name"]}: {loc["quantityOnHand"]} left.' for loc in self.good_pickup_locations]
-
-    #         locations_msg = "\n".join(locations_instock)
-
-    #         msg_content = (
-    #             f'Name: {name} \n'
-    #             f'({self.sku}) has store PickUp {self.pickup_status}, Price: ${sale_price}(${regular_price}): {locations_msg}'
-    #             f'Link: https://www.bestbuy.ca/en-ca/product/{self.sku}'
-    #         )
-
-    #         return msg_content
-    #     else:
-    #         return f'{self.sku} is {self.pickup_status} for PickUp.'
-    
-    # @property
-    # def check_product_info(self):
-    #     response_dict = feapder.Request(
-    #         url = f"https://www.bestbuy.ca/api/v2/json/product/{self.sku}?",
-    #         params= {
-    #             "currentRegion": "ON",
-    #             "lang": "en-CA",
-    #             "include": "all"
-    #         },
-    #         headers = file_input_output.FileReadWrite().create_random_header['bestbuy']
-    #     ) \
-    #     .get_response().json
-
-    #     target_keys = [
-    #         'name',
-    #         'regularPrice', 
-    #         'salePrice', 
-    #         'saleStartDate',
-    #         'SaleEndDate',
-    #         'upcNumber',
-    #     ]
-
-    #     return {key: response_dict.get(key) for key in target_keys}
-        
         
 if __name__ == '__main__':
     spider = BBSpider(thread_count=1)
