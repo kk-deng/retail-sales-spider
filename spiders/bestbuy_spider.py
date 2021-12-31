@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2021-02-08 16:06:12
+Created on 2021-12-22 16:06:12
 ---------
-@summary:
+@summary: A Bestbuy spider which can scraped sales quantity of specific SKUs.
 ---------
-@author: Boris
+@author: Kelvin
 """
 import random
 import time
@@ -19,7 +19,7 @@ from items import *
 from tools import *
 from utils.helpers import escape_markdown
 
-SCRAPE_COUNT = 800
+SCRAPE_COUNT = 1000
 BB_SHIPPING_CHECK = True
 BB_PICKUP_CHECK = False
 
