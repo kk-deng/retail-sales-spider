@@ -11,6 +11,7 @@ class FileReadWrite:
         self.deal_csv_path = 'resources\deal.csv'
         self.watchlist_csv_path = 'resources\watchlist.csv'
         self.token = self.__import_keys['token']
+        self.newbot_token = self.__import_keys['newbot_token']
         self.chat_id = self.__import_keys['chat_id']
         self.channel_id = self.__import_keys['channel_id']
         self.MONGO_IP = self.__import_keys["MONGO_IP"]
@@ -80,23 +81,8 @@ class FileReadWrite:
         except:
             return []
 
-    # @staticmethod
-    # def grp(pat, txt):
-    #     r = re.search(pat, txt)
-    #     return r.group(0) if r else '&'
-
     @property
     def create_random_header(self):
-        # browsers = {
-        #     'chrome': r'Chrome/[^ ]+',
-        #     'safari': r'AppleWebKit/[^ ]+',
-        #     'opera': r'Opera\s.+$',
-        #     'firefox': r'Firefox/.+$',
-        #     'internetexplorer': r'Trident/[^;]+',
-        # }
-        # browser = random.choice(self.ua.data_randomize)
-        # user_agent = sorted(self.ua.data_browsers[browser], key=lambda a: self.grp(browsers[browser], a))[-1]
-        # # user_agent = self.ua.random
         with open('resources/user_agent.json') as s:
             ua_list = json.load(s)
             # Get a random index within the json list length
@@ -124,9 +110,3 @@ class FileReadWrite:
                         }
             }
         return ua_list
-        # 'https://www.costco.ca/.product.5203665.html'
-        # headers={
-        #     'authority': 'www.costco.ca',
-        #     'path': '/.product.5203665.html',
-        #     'headers': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
-        #     'referer': 'https://www.costco.ca/playstation-5-console-bundle.product.100696941.html'}
