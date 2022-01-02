@@ -6,20 +6,19 @@ Created on 2021-11-29 16:06:12
 ---------
 @author: Kelvin
 """
-from typing import List, Set, Dict
-from functools import wraps
-from datetime import datetime, time as tm
-import time
 import random
+import time
+from datetime import datetime, time as tm
+from functools import wraps
+from typing import Dict, List, Set
+
 import feapder
+import telegram
+from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
 from items import *
 from tools import *
 from utils.helpers import escape_markdown
-import telegram
-
-from feapder.db.mongodb import MongoDB
-
 
 SCRAPE_COUNT = 1000
 BB_SHIPPING_CHECK = True
@@ -83,8 +82,8 @@ class RfdSpider(feapder.AirSpider):
             topictitle_retailer = self.topictitle_retailer(topic)
 
             record_conditions = [
-                (elapsed_mins <= 120), 
-                (elapsed_mins <= 240 and upvotes >= 30)
+                (elapsed_mins <= 180), 
+                (elapsed_mins <= 300 and upvotes >= 30)
             ]
 
             if any(record_conditions):
@@ -112,7 +111,7 @@ class RfdSpider(feapder.AirSpider):
                 try:
                     msg_sent_counter = db_documents[0]['msg_sent_cnt']
                 except:
-                    log.info(f'New Added: {thread_id} [{upvotes} Votes] '
+                    log.warning(f'New Added: {thread_id} [{upvotes} Votes] '
                         f'@{"{:.2f}".format(elapsed_mins)}mins ago, '
                         f'Brand: {topictitle_retailer}, Title: {topic_title}')
                     msg_sent_counter = 0
@@ -201,7 +200,7 @@ class RfdSpider(feapder.AirSpider):
         msg_content = (
             f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
             f'*Votes*: *{upvotes}* votes ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'*Title*: _({retailer_name.strip("()")})_ `{(topic_title)}` \n'
+            f'*Title*: _({retailer_name.strip("[]")})_ `{(topic_title)}` \n'
             f'[Click to open Deal link]({topic_link})'
         )
         
@@ -222,7 +221,7 @@ class RfdSpider(feapder.AirSpider):
     @send_action(telegram.ChatAction.TYPING)
     def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
         log_content = content_msg.replace("\n", "")
-        log.info(f'## Sending: {log_content}')
+        log.warning(f'## Sending: {log_content}')
 
         if topic_link:
             keyboard = [
@@ -262,6 +261,6 @@ class RfdSpider(feapder.AirSpider):
         else:
             return ''
 
-# if __name__ == '__main__':
-#     spider = RfdSpider(thread_count=10)
-#     spider.start()
+if __name__ == '__main__':
+    spider = RfdSpider(thread_count=10)
+    spider.start()
