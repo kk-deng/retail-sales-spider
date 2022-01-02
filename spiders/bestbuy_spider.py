@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on 2021-02-08 16:06:12
+Created on 2021-12-22 16:06:12
 ---------
-@summary:
+@summary: A Bestbuy spider which can scraped sales quantity of specific SKUs.
 ---------
-@author: Boris
+@author: Kelvin
 """
 import random
 import time
@@ -19,7 +19,7 @@ from items import *
 from tools import *
 from utils.helpers import escape_markdown
 
-SCRAPE_COUNT = 800
+SCRAPE_COUNT = 1000
 BB_SHIPPING_CHECK = True
 BB_PICKUP_CHECK = False
 
@@ -28,7 +28,7 @@ class BBSpider(feapder.AirSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
-        self.bot = telegram.Bot(token=self.file_operator.token)
+        self.bot = telegram.Bot(token=self.file_operator.newbot_token)
         self.random_header = self.file_operator.create_random_header
         self.products_dict = {}
         self.skus_list = [
@@ -67,7 +67,7 @@ class BBSpider(feapder.AirSpider):
         log.info('Fetched Bestbuy product info:')
         for key, value in self.products_dict.items():
             if value.get('name'):
-                values = ', '.join([f'{k}({v})' for k, v in value.items()])
+                values = ', '.join([f'{k}({v})' for k, v in value.items() if v])
                 log.info(f'SKU ({key}): {values}')
             else:
                 log.warning(f'SKU ({key}) has no data from Bestbuy.')
@@ -116,6 +116,7 @@ class BBSpider(feapder.AirSpider):
             'saleStartDate',
             'SaleEndDate',
             'upcNumber',
+            'quantityRemaining',
         ]
 
         self.products_dict[product_sku] = {key: response_json.get(key) for key in target_keys}
@@ -148,7 +149,8 @@ class BBSpider(feapder.AirSpider):
                     msg_content = self.resolve_shipping_msg(product)
 
                     if product.shipping_status in ['InStock', 'BackOrder'] and \
-                        product.shipping_quantity <= 5:
+                        product.shipping_quantity != self.products_dict[product.sku]['quantityRemaining'] and \
+                        self.products_dict[product.sku]['quantityRemaining']:
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
                     else:
@@ -162,6 +164,9 @@ class BBSpider(feapder.AirSpider):
                         self.send_bot_msg(msg_content)
                     else:
                         log.info(msg_content)
+                
+                # Update quantity after fetching API
+                self.products_dict[product.sku]['quantityRemaining'] = product.shipping_quantity
             
             if len(out_of_stock_dict) > 0:
                 values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
@@ -173,15 +178,17 @@ class BBSpider(feapder.AirSpider):
     
     def resolve_shipping_msg(self, product):
         if product.shipping_quantity > 0:
+            # Use products info dict to fetch its meta data, and previous quantity
             product_info = self.products_dict[product.sku]
             name = product_info['name']
             sale_price = product_info['salePrice']
             regular_price = product_info['regularPrice']
+            old_quantity = product_info['quantityRemaining']
 
             msg_content = (
                 f'Name: {name} \n'
-                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. '
-                f'Quantity: {product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
+                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. \n'
+                f'Quantity: {old_quantity}->{product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
                 f'Link: https://www.bestbuy.ca/en-ca/product/{product.sku}'
             )
 
@@ -217,7 +224,7 @@ class BBSpider(feapder.AirSpider):
         try:
             self.bot.send_message(
                 text=content_msg, 
-                chat_id=self.file_operator.channel_id,
+                chat_id=self.file_operator.chat_id,
                 # reply_markup=reply_markup,
                 # parse_mode=telegram.ParseMode.MARKDOWN
                 )
