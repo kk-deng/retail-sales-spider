@@ -135,7 +135,6 @@ class BBSpider(feapder.AirSpider):
 
                 # Instantiate one item for mongoDB
                 item = bestbuy_item.BbShippingItem()
-                # item.identifier = f's-{product.sku}-{product.shipping_status}-{product.shipping_quantity}'
                 item.sku = product.sku
                 item.timestamp = now
                 item.quantity = product.shipping_quantity
@@ -186,10 +185,10 @@ class BBSpider(feapder.AirSpider):
             old_quantity = product_info['quantityRemaining']
 
             msg_content = (
-                f'Name: {name} \n'
-                f'({product.sku}) is {product.shipping_status} with seller {product.seller_id}. \n'
-                f'Quantity: {old_quantity}->{product.shipping_quantity}, Price: ${sale_price}(${regular_price})\n'
-                f'Link: https://www.bestbuy.ca/en-ca/product/{product.sku}'
+                f'*Name*: _{name}_ \n'
+                f'(*{product.sku}*) is *{product.shipping_status}* with seller {product.seller_id}. \n'
+                f'*Quantity*: *{old_quantity}->{product.shipping_quantity}*, Price: ${sale_price}/${regular_price}\n'
+                f'*Link*: https://www.bestbuy.ca/en-ca/product/{product.sku}'
             )
 
             return msg_content
@@ -226,7 +225,7 @@ class BBSpider(feapder.AirSpider):
                 text=content_msg, 
                 chat_id=self.file_operator.chat_id,
                 # reply_markup=reply_markup,
-                # parse_mode=telegram.ParseMode.MARKDOWN
+                parse_mode=telegram.ParseMode.MARKDOWN
                 )
             log.info('## Msg was sent successfully!')
             time.sleep(3)
@@ -246,12 +245,7 @@ class BestBuyItem:
         self.shipping_quantity = self.shipping['quantityRemaining']
         self.shipping_status = self.shipping['status']
         self.pickup_status = self.pickup['status']
-        # self.sku_map = self.get_skus_map
         self.pickup_locations = self.good_pickup_locations
-
-    @property
-    def get_skus_map(self):
-        return {}
 
     @property
     def good_pickup_locations(self) -> List[dict]:
