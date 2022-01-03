@@ -30,6 +30,8 @@ class RfdSpider(feapder.AirSpider):
         super().__init__(*args, **kwargs)
         self.db = MongoDB()
         self.file_operator = file_input_output.FileReadWrite()
+        self.rfd_api = self.file_operator.rfd_api
+        self.rfd_api_params = self.file_operator.rfd_api_params
         self.bot = telegram.Bot(token=self.file_operator.token)
         self.random_header = self.file_operator.create_random_header
 
@@ -46,7 +48,7 @@ class RfdSpider(feapder.AirSpider):
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
-            yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+            yield feapder.Request(self.rfd_api, params=self.rfd_api_params, method="GET")
 
             # Lower the speed at night by checking the now time
             if tm(1,00) <= datetime.now().time() <= tm(7,59):
@@ -260,6 +262,12 @@ class RfdSpider(feapder.AirSpider):
             return f'({"&".join(matches_list)}) '
         else:
             return ''
+
+
+class RfdTopic:
+    def __init__(self, topic):
+        self.topic_id = topic['topic_id']
+        self.topic_title = topic['topic_title']
 
 if __name__ == '__main__':
     spider = RfdSpider(thread_count=10)
