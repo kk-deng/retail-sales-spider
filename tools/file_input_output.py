@@ -7,9 +7,9 @@ import re
 
 class FileReadWrite:
     def __init__(self):
-        self.settings_path = 'resources\settings.json'
-        self.deal_csv_path = 'resources\deal.csv'
-        self.watchlist_csv_path = 'resources\watchlist.csv'
+        self.settings_path = r'resources\settings.json'
+        self.deal_csv_path = r'resources\deal.csv'
+        self.watchlist_csv_path = r'resources\watchlist.csv'
         self.rfd_api = self.__import_keys['rfd_api']
         self.rfd_api_params = self.__import_keys['rfd_api_params']
         self.token = self.__import_keys['token']

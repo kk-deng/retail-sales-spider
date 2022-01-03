@@ -1,8 +1,9 @@
 import pytest
+from spiders.spider_man import RfdTopic
 
 @pytest.fixture(autouse=True)
-def topic():
-    yield {
+def api_topic():
+    info = {
         'topic_id': 2512445, 
         'forum_id': 9, 
         'title': 'Fido Internet 150Mps service for 42.50  (first 12 months)', 
@@ -51,3 +52,5 @@ def topic():
             'holiday': 0
         }
     }
+
+    return RfdTopic(info)
