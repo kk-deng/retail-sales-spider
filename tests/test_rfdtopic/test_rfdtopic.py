@@ -16,6 +16,7 @@ def test_topic_link(api_topic):
 def test_topic_post_time(api_topic):
     assert type(api_topic.post_time) is datetime
     assert api_topic.post_time_str == "12-16 17:05:26"
+    assert api_topic.last_post_time == datetime(2022,1,3,15,53,40)
 
 def test_offer(api_topic):
     assert type(api_topic.dealer_name) is str

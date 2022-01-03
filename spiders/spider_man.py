@@ -273,9 +273,11 @@ class RfdTopic:
         self.upvotes = self.total_up - self.total_down
         self.total_replies = topic['total_replies']
         self.total_views = topic['total_views']
+        self.summary_body = topic['summary']['body']
         self.topic_title_link = 'https://forums.redflagdeals.com' + topic['web_path']
         self.post_time = self.utc_to_local(topic['post_time'])
         self.post_time_str = self.first_post_time_string(self.post_time)
+        self.last_post_time = self.utc_to_local(topic['last_post_time'])
         self.elapsed_mins = self.compare_with_now(self.post_time)
         self.offer = topic['offer']
         self.dealer_name = self.offer['dealer_name']
