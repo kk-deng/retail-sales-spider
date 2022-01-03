@@ -267,23 +267,36 @@ class RfdSpider(feapder.AirSpider):
 class RfdTopic:
     def __init__(self, topic):
         self.topic_id = topic['topic_id']
-        self.topic_title = topic['topic_title']
+        self.topic_title = topic['title']
         self.total_up = topic['votes']['total_up']
         self.total_down = topic['votes']['total_down']
         self.upvotes = self.total_up - self.total_down
         self.total_replies = topic['total_replies']
         self.total_views = topic['total_views']
         self.topic_title_link = 'https://forums.redflagdeals.com' + topic['web_path']
-        self.post_time_utc = datetime.fromisoformat(topic['post_time'])
-        self.post_time = self.utc_to_local(self.post_time_utc)
+        self.post_time = self.utc_to_local(topic['post_time'])
+        self.post_time_str = self.first_post_time_string(self.post_time)
+        self.elapsed_mins = self.compare_with_now(self.post_time)
+        self.offer = topic['offer']
+        self.dealer_name = self.offer['dealer_name']
+        self.offer_price = self.offer['price']
+        self.offer_url = self.offer['url']
+        self.offer_savings = self.offer['savings']
+        self.offer_expires_at = self.offer['expires_at']
     
     @staticmethod
-    def utc_to_local(utc_dt: datetime) -> datetime:
-        return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
+    def utc_to_local(utc_dt: str) -> datetime:
+        utc_dt_iso = datetime.fromisoformat(utc_dt)
+        return utc_dt_iso.replace(tzinfo=timezone.utc).astimezone(tz=None).replace(tzinfo=None)
     
     @staticmethod
     def first_post_time_string(post_time_obj: datetime) -> str:
-        return datetime.strftime(post_time_obj, '%m-%d %H:%M')
+        return datetime.strftime(post_time_obj, '%m-%d %H:%M:%S')
+
+    @staticmethod
+    def compare_with_now(post_time_obj: datetime) -> float:
+        now = datetime.now()
+        return (now - post_time_obj).total_seconds() / 60
 
 if __name__ == '__main__':
     spider = RfdSpider(thread_count=10)
