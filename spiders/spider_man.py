@@ -8,7 +8,7 @@ Created on 2021-11-29 16:06:12
 """
 import random
 import time
-from datetime import datetime, time as tm
+from datetime import datetime, timezone, time as tm
 from functools import wraps
 from typing import Dict, List, Set
 
@@ -268,6 +268,22 @@ class RfdTopic:
     def __init__(self, topic):
         self.topic_id = topic['topic_id']
         self.topic_title = topic['topic_title']
+        self.total_up = topic['votes']['total_up']
+        self.total_down = topic['votes']['total_down']
+        self.upvotes = self.total_up - self.total_down
+        self.total_replies = topic['total_replies']
+        self.total_views = topic['total_views']
+        self.topic_title_link = 'https://forums.redflagdeals.com' + topic['web_path']
+        self.post_time_utc = datetime.fromisoformat(topic['post_time'])
+        self.post_time = self.utc_to_local(self.post_time_utc)
+    
+    @staticmethod
+    def utc_to_local(utc_dt: datetime) -> datetime:
+        return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
+    
+    @staticmethod
+    def first_post_time_string(post_time_obj: datetime) -> str:
+        return datetime.strftime(post_time_obj, '%m-%d %H:%M')
 
 if __name__ == '__main__':
     spider = RfdSpider(thread_count=10)
