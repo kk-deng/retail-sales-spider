@@ -86,9 +86,10 @@ class RfdSpider(feapder.AirSpider):
                     db_documents = self.db.find(coll_name='rfd_topic', condition={'topic_id': topic.topic_id}, limit=1)
                     msg_sent_counter = db_documents[0]['msg_sent_cnt']
                 except:
-                    log.warning(f'New Added: {topic.topic_id} [{topic.upvotes} Votes] '
-                        f'@{"{:.2f}".format(topic.elapsed_mins)}mins ago, '
-                        f'Brand: {topic.dealer_name}, Title: {topic.topic_title}')
+                    log.warning(f'New Added: {topic.topic_id} ({topic.upvotes} Votes) '
+                        f'{"{:.2f}".format(topic.elapsed_mins)}mins ago (@{topic.post_time_str}), '
+                        f'Dealer: {topic.dealer_name}, Title: {topic.topic_title}, Summary: {topic.summary_body} '
+                        f'${topic.offer_price} with {topic.offer_savings}')
                     msg_sent_counter = 0
             
                 # Parse retailer name and deal title, compared with watch_list and return list of boolean
@@ -256,15 +257,16 @@ class RfdSpider(feapder.AirSpider):
         topic_title = topic.topic_title
         topic_link = topic.topic_title_link
         dealer_name = topic.dealer_name
+        offer_url = topic.offer_url
 
         msg_content = (
             f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'*Votes*: *{upvotes}* votes ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'*Votes*: *{upvotes}* votes ({topic.total_up}|{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
             f'*Title*: _({dealer_name.strip("[]")})_ `{(topic_title)}` \n'
             f'[Click to open Deal link]({topic_link})'
         )
         
-        return self.send_bot_msg(msg_content, topic_link)
+        return self.send_bot_msg(msg_content, offer_url)
     
     def send_action(action):
         """Sends `action` while processing func command."""
@@ -279,14 +281,14 @@ class RfdSpider(feapder.AirSpider):
         return decorator
 
     @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
+    def send_bot_msg(self, content_msg: str, offer_url: str = None) -> bool:
         log_content = content_msg.replace("\n", "")
         log.warning(f'## Sending: {log_content}')
 
-        if topic_link:
+        if offer_url:
             keyboard = [
                 [
-                    telegram.InlineKeyboardButton("Open Link", url=topic_link),
+                    telegram.InlineKeyboardButton("Open Direct Link", url=offer_url),
                 ],
             ]
             reply_markup = telegram.InlineKeyboardMarkup(keyboard)
@@ -326,8 +328,9 @@ class RfdTopic:
     def __init__(self, topic):
         self.topic_id = topic['topic_id']
         self.topic_title = topic['title']
-        self.total_up = topic['votes'].get('total_up', 0)
-        self.total_down = topic['votes'].get('total_down', 0)
+        self.votes = topic['votes'] or {}
+        self.total_up = self.votes.get('total_up', 0)
+        self.total_down = self.votes.get('total_down', 0)
         self.upvotes = self.total_up - self.total_down
         self.total_replies = topic['total_replies']
         self.total_views = topic['total_views']
