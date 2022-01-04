@@ -26,6 +26,8 @@ class RfdTopicItem(UpdateItem):
     ] # Update certain keys
 
     def __init__(self, *args, **kwargs):
+        topic = args[0]
+        
         self.topic_id = topic.topic_id
         self.upvotes = topic.upvotes
         self.elapsed_mins = topic.elapsed_mins
