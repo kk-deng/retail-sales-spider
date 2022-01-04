@@ -89,7 +89,16 @@ class FileReadWrite:
             ua_list = json.load(s)
             # Get a random index within the json list length
             random_ua = random.choice(ua_list)['useragent']
-            ua_list = {"rfd": {"user-agent": random_ua},
+            ua_list = {"rfd": {
+                            "Host": "forums.redflagdeals.com",
+                            "API-Key-Version": "1",
+                            "API-Version": "1.0",
+                            "Accept": "*/*",
+                            "User-Agent": "RedFlagDeals/6063 CFNetwork/1209 Darwin/20.2.0",
+                            "Accept-Language": "en-ca",
+                            "Accept-Encoding": "gzip, deflate, br",
+                            "Connection": "keep-alive"
+                        },
                         "costco": {
                             "accept": "pplication/json, text/javascript, */*; q=0.01",
                             "accept-encoding": 'gzip, deflate, br',
