@@ -22,25 +22,27 @@ class RfdTopicItem(UpdateItem):
         "total_replies",
         "total_views",
         "elapsed_mins",
+        "msg_sent_cnt",
     ] # Update certain keys
 
     def __init__(self, *args, **kwargs):
-        self.topic_id = None
-        self.upvotes = None
-        self.elapsed_mins = None
-        self.dealer_name = None
-        self.topic_title = None
-        self.post_time = None
-        self.total_up = None
-        self.total_down = None
-        self.total_replies = None
-        self.total_views = None
-        self.offer_price = None
-        self.topic_title_link = None
-        self.summary_body = None
-        self.post_time_str = None
-        self.last_post_time = None
-        self.offer = None
-        self.offer_url = None
-        self.offer_savings = None
-        self.offer_expires_at = None
+        self.topic_id = topic.topic_id
+        self.upvotes = topic.upvotes
+        self.elapsed_mins = topic.elapsed_mins
+        self.dealer_name = topic.dealer_name
+        self.topic_title = topic.topic_title
+        self.post_time = topic.post_time
+        self.total_up = topic.total_up
+        self.total_down = topic.total_down
+        self.total_replies = topic.total_replies
+        self.total_views = topic.total_views
+        self.offer_price = topic.offer_price
+        self.topic_title_link = topic.topic_title_link
+        self.summary_body = topic.summary_body
+        self.post_time_str = topic.post_time_str
+        self.last_post_time = topic.last_post_time
+        self.offer = topic.offer
+        self.offer_url = topic.offer_url
+        self.offer_savings = topic.offer_savings
+        self.offer_expires_at = topic.offer_expires_at
+        self.msg_sent_cnt = None
