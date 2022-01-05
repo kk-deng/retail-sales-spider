@@ -33,7 +33,7 @@ class RfdSpider(feapder.AirSpider):
         self.rfd_api = self.file_operator.rfd_api
         self.rfd_api_params = self.file_operator.rfd_api_params
         self.bot = telegram.Bot(token=self.file_operator.token)
-        self.random_header = self.file_operator.create_random_header
+        self.rfd_header = self.file_operator.create_random_header['rfd']
 
     def start_callback(self):
         self.send_bot_msg('Bot started...')
@@ -43,7 +43,7 @@ class RfdSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        request.headers = self.random_header['rfd']
+        request.headers = self.rfd_header
         return request
 
     def start_requests(self):
@@ -82,8 +82,8 @@ class RfdSpider(feapder.AirSpider):
 
                 try:
                     # Find the same thread_id in MongoDB
-                    db_documents = self.db.find(coll_name='rfd_topic', condition={'topic_id': topic.topic_id}, limit=1)
-                    msg_sent_counter = db_documents[0]['msg_sent_cnt']
+                    db_topic = self.find_db_topic_by_id(topic.topic_id)
+                    msg_sent_counter = db_topic['msg_sent_cnt']
                 except:
                     self.log_new_topic(topic)
                     msg_sent_counter = 0
@@ -194,14 +194,24 @@ class RfdSpider(feapder.AirSpider):
             f'{offer_price_str + offer_savings_str}'
         )
 
+    def find_db_topic_by_id(self, topic_id) -> int:
+        return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)[0]
+
     @staticmethod
-    def match_watchlist(topictitle_retailer: str, topic_title: str, watch_list: List[str]) -> List[bool]:
+    def match_watchlist(
+        topictitle_retailer: str, 
+        topic_title: str, 
+        watch_list: List[str]
+    ) -> List[bool]:
         retailer_and_title = topictitle_retailer + ' ' + topic_title
         true_watchlist = [keyword in retailer_and_title.lower() for keyword in watch_list]
         return true_watchlist
     
     @staticmethod
-    def matched_keywords(boolean_watchlist: List[bool], watch_list: List[str]) -> str:
+    def matched_keywords(
+        boolean_watchlist: List[bool], 
+        watch_list: List[str]
+    ) -> str:
         if any(boolean_watchlist):
             matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
             return f'({"&".join(matches_list)}) '
