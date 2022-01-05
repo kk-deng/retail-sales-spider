@@ -79,17 +79,13 @@ class RfdSpider(feapder.AirSpider):
             ]
 
             if any(record_conditions):
-                item = rfd_item.RfdTopicItem(topic)
 
                 try:
                     # Find the same thread_id in MongoDB
                     db_documents = self.db.find(coll_name='rfd_topic', condition={'topic_id': topic.topic_id}, limit=1)
                     msg_sent_counter = db_documents[0]['msg_sent_cnt']
                 except:
-                    log.warning(f'New Added: {topic.topic_id} ({topic.upvotes} Votes) '
-                        f'{"{:.2f}".format(topic.elapsed_mins)}mins ago (@{topic.post_time_str}), '
-                        f'Dealer: {topic.dealer_name}, Title: {topic.topic_title}, Summary: {topic.summary_body} '
-                        f'${topic.offer_price} with {topic.offer_savings}')
+                    self.log_new_topic(topic)
                     msg_sent_counter = 0
             
                 # Parse retailer name and deal title, compared with watch_list and return list of boolean
@@ -120,6 +116,7 @@ class RfdSpider(feapder.AirSpider):
 
                         msg_sent_counter += 1  # Record the sending count
                 
+                item = rfd_item.RfdTopicItem(topic)
                 item.msg_sent_cnt = msg_sent_counter
                 yield item
     
@@ -136,10 +133,10 @@ class RfdSpider(feapder.AirSpider):
         offer_url = topic.offer_url
 
         msg_content = (
-            f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'*Votes*: *{upvotes}* votes ({topic.total_up}|{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'*Title*: _({dealer_name.strip("[]")})_ `{(topic_title)}` \n'
-            f'*Link*: {topic_link}'
+            f'*🔥Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+            f'*👍Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'*📕Title*: _({dealer_name.strip("[]")})_ {(topic_title)} \n'
+            f'*🔗Link*: {topic_link}'
         )
         
         return self.send_bot_msg(msg_content, offer_url)
@@ -184,6 +181,18 @@ class RfdSpider(feapder.AirSpider):
         except Exception as e:
             log.info(f'## Msg failed sending with error:\n{e}')
             return False
+
+    @staticmethod
+    def log_new_topic(topic):
+        offer_price_str = f'${topic.offer_price}' if topic.offer_price else ''
+        offer_savings_str = f', saving: {topic.offer_savings}' if topic.offer_savings else ''
+        
+        log.warning(
+            f'New Added: {topic.topic_id} ({topic.upvotes} Votes) '
+            f'{"{:.2f}".format(topic.elapsed_mins)}mins ago (@{topic.post_time_str}), '
+            f'Dealer: {topic.dealer_name}, Title: {topic.topic_title} '
+            f'{offer_price_str + offer_savings_str}'
+        )
 
     @staticmethod
     def match_watchlist(topictitle_retailer: str, topic_title: str, watch_list: List[str]) -> List[bool]:
