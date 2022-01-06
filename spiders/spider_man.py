@@ -71,7 +71,7 @@ class RfdSpider(feapder.AirSpider):
         topic_list = response.json['topics']
 
         for thread in topic_list:
-            topic = RfdTopic(thread)
+            topic = RfdTopic(thread, watch_list)
 
             record_conditions = [
                 (topic.elapsed_mins <= 180), 
@@ -89,13 +89,13 @@ class RfdSpider(feapder.AirSpider):
                     msg_sent_counter = 0
             
                 # Parse retailer name and deal title, compared with watch_list and return list of boolean
-                boolean_watchlist = self.match_watchlist(topic.dealer_name, topic.topic_title, watch_list)
-                matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
+                # boolean_watchlist = self.match_watchlist(topic.dealer_name, topic.topic_title, watch_list)
+                # matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 # Collect the msg sending conditions, any of them is True
                 sendmsg_conditions_1 = [
                     (topic.upvotes >= 8), 
-                    (any(boolean_watchlist)),
+                    topic.matched_keywords,
                     (topic.upvotes/topic.elapsed_mins >= 0.4)
                 ]
                 sendmsg_conditions_2 = [(topic.upvotes >= 20),]
@@ -103,7 +103,8 @@ class RfdSpider(feapder.AirSpider):
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
                     (any(sendmsg_conditions_2) and msg_sent_counter < 2):
-                    returned_msg = self.send_text_msg(topic, watchlist=f'{matched_keywords}*NEW*')
+                    # returned_msg = self.send_text_msg(topic, watchlist=f'{matched_keywords}*NEW*')
+                    returned_msg = self.send_text_msg(topic)
                     if returned_msg:
                         # If a deal has high upvotes, pin the msg in the channel
                         if any(sendmsg_conditions_2):
@@ -121,7 +122,7 @@ class RfdSpider(feapder.AirSpider):
                 yield item
     
     def send_text_msg(self, topic, **kwargs):
-        watchlist_str = kwargs.get('watchlist', '*Hot*')
+        # watchlist_str = kwargs.get('watchlist', '*Hot*')
 
         # Get strings from item_dict
         elapsed_mins = topic.elapsed_mins
@@ -131,12 +132,24 @@ class RfdSpider(feapder.AirSpider):
         topic_link = topic.topic_title_link
         dealer_name = topic.dealer_name
         offer_url = topic.offer_url
+        matched_keywords = topic.matched_keywords
 
+        if upvotes >= 8:
+            hot_emoji = '🔥' * round(upvotes / 8)
+            msg_header = f"{hot_emoji}*Hot Deal*:"
+        else:
+            if upvotes_per_min >= 0.4 and upvotes >= 2:
+                msg_header = "🚀*Trending Deal*:"
+            else:
+                msg_header = "🆕*New Deal*:"
+
+        keywords = f'({matched_keywords}) ' if matched_keywords else ''
+        
         msg_content = (
-            f'*🔥Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'*👍Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'*📕Title*: _({dealer_name.strip("[]")})_ {(topic_title)} \n'
-            f'*🔗Link*: {topic_link}'
+            f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+            f'👍*Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'📕*Title*: _({dealer_name.strip("[]")})_ {(topic_title)} \n'
+            f'🔗*Link*: {topic_link}'
         )
         
         return self.send_bot_msg(msg_content, offer_url)
@@ -220,7 +233,7 @@ class RfdSpider(feapder.AirSpider):
 
 
 class RfdTopic:
-    def __init__(self, topic):
+    def __init__(self, topic, watch_list: List[str]):
         self.topic_id = topic['topic_id']
         self.topic_title = topic['title']
         self.votes = topic['votes'] or {}
@@ -242,6 +255,8 @@ class RfdTopic:
         self.offer_url = self.offer['url']
         self.offer_savings = self.offer['savings']
         self.offer_expires_at = self.offer['expires_at']
+        self.watch_list = watch_list
+        # self.matched_watchlist_ind = any(self.watchlist_bool())
     
     @staticmethod
     def utc_to_local(utc_dt: str) -> datetime:
@@ -256,6 +271,19 @@ class RfdTopic:
     def compare_with_now(post_time_obj: datetime) -> float:
         now = datetime.now()
         return (now - post_time_obj).total_seconds() / 60
+    
+    @property
+    def watchlist_bool(self) -> List[bool]:
+        dealer_and_title = self.dealer_name + ' ' + self.topic_title
+        return [keyword in dealer_and_title.lower() for keyword in self.watch_list]
+    
+    @property
+    def matched_keywords(self) -> str:
+        if any(self.watchlist_bool):
+            keyword_list = [i for (i, v) in zip(self.watch_list, self.watchlist_bool) if v]
+            return f'{"&".join(keyword_list)}'
+        else:
+            return None
 
 
 if __name__ == '__main__':
