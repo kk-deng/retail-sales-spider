@@ -23,3 +23,7 @@ def test_offer(api_topic):
     assert api_topic.offer_price == '42.50'
     assert "https://" in api_topic.offer_url
     assert api_topic.offer_expires_at == None
+
+def test_matched_keywords(api_topic):
+    assert any(api_topic.watchlist_bool) == True
+    assert api_topic.matched_keywords == 'fido'

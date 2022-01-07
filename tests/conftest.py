@@ -53,4 +53,15 @@ def api_topic():
         }
     }
 
-    return RfdTopic(info)
+    watch_list = [
+        'PS5',
+        'PlayStation 5',
+        '1000XM4',
+        'Bambino',
+        'Breville',
+        'Fido',
+    ]
+
+    watch_list = [item.lower() for item in watch_list]
+
+    return RfdTopic(info, watch_list)
