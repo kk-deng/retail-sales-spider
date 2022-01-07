@@ -7,9 +7,11 @@ import re
 
 class FileReadWrite:
     def __init__(self):
-        self.settings_path = 'resources\settings.json'
-        self.deal_csv_path = 'resources\deal.csv'
-        self.watchlist_csv_path = 'resources\watchlist.csv'
+        self.settings_path = r'resources\settings.json'
+        self.deal_csv_path = r'resources\deal.csv'
+        self.watchlist_csv_path = r'resources\watchlist.csv'
+        self.rfd_api = self.__import_keys['rfd_api']
+        self.rfd_api_params = self.__import_keys['rfd_api_params']
         self.token = self.__import_keys['token']
         self.newbot_token = self.__import_keys['newbot_token']
         self.chat_id = self.__import_keys['chat_id']
@@ -87,7 +89,16 @@ class FileReadWrite:
             ua_list = json.load(s)
             # Get a random index within the json list length
             random_ua = random.choice(ua_list)['useragent']
-            ua_list = {"rfd": {"user-agent": random_ua},
+            ua_list = {"rfd": {
+                            "Host": "forums.redflagdeals.com",
+                            "API-Key-Version": "1",
+                            "API-Version": "1.0",
+                            "Accept": "*/*",
+                            "User-Agent": "RedFlagDeals/6063 CFNetwork/1209 Darwin/20.2.0",
+                            "Accept-Language": "en-ca",
+                            "Accept-Encoding": "gzip, deflate, br",
+                            "Connection": "keep-alive"
+                        },
                         "costco": {
                             "accept": "pplication/json, text/javascript, */*; q=0.01",
                             "accept-encoding": 'gzip, deflate, br',

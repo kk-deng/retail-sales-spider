@@ -8,7 +8,7 @@ Created on 2021-11-29 16:06:12
 """
 import random
 import time
-from datetime import datetime, time as tm
+from datetime import datetime, timezone, time as tm
 from functools import wraps
 from typing import Dict, List, Set
 
@@ -30,8 +30,10 @@ class RfdSpider(feapder.AirSpider):
         super().__init__(*args, **kwargs)
         self.db = MongoDB()
         self.file_operator = file_input_output.FileReadWrite()
+        self.rfd_api = self.file_operator.rfd_api
+        self.rfd_api_params = self.file_operator.rfd_api_params
         self.bot = telegram.Bot(token=self.file_operator.token)
-        self.random_header = self.file_operator.create_random_header
+        self.rfd_header = self.file_operator.create_random_header['rfd']
 
     def start_callback(self):
         self.send_bot_msg('Bot started...')
@@ -41,12 +43,12 @@ class RfdSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        request.headers = self.random_header['rfd']
+        request.headers = self.rfd_header
         return request
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
-            yield feapder.Request("https://forums.redflagdeals.com/hot-deals-f9/")
+            yield feapder.Request(self.rfd_api, params=self.rfd_api_params, method="GET")
 
             # Lower the speed at night by checking the now time
             if tm(1,00) <= datetime.now().time() <= tm(7,59):
@@ -63,71 +65,46 @@ class RfdSpider(feapder.AirSpider):
             raise Exception("Response code not 200")
     
     def parse(self, request, response):
-        topic_list = response.bs4().find_all('li', class_='row topic')
-
         # Read watchlist for keywords watching
         watch_list = self.file_operator.watchlist_csv
 
-        for topic in topic_list:
+        topic_list = response.json['topics']
 
-            thread_id = int(topic['data-thread-id'])
-            topic_title = topic.find('a', {'class': 'topic_title_link'}).text.strip()
-            upvotes = self.upvotes(topic)
-            posts = int(topic.find('div', {'class': 'posts'}).text.replace(',', ''))
-            views = int(topic.find('div', {'class': 'views'}).text.replace(',', ''))
-            topic_title_link = topic.find('a', {'class': 'topic_title_link'})['href']
-            first_post_time_obj = self.first_post_time_obj(topic)
-            first_post_time_string = self.first_post_time_string(first_post_time_obj)
-            elapsed_mins = self.elapsed_mins(first_post_time_obj)
-            topictitle_retailer = self.topictitle_retailer(topic)
+        for thread in topic_list:
+            topic = RfdTopic(thread, watch_list)
 
             record_conditions = [
-                (elapsed_mins <= 180), 
-                (elapsed_mins <= 300 and upvotes >= 30)
+                (topic.elapsed_mins <= 180), 
+                (topic.elapsed_mins <= 300 and topic.upvotes >= 30)
             ]
 
             if any(record_conditions):
-                item = spider_data_item.SpiderDataItem()  # Define an item to save to the database
-
-                item.thread_id = thread_id
-                item.topic_title = topic_title
-                item.upvotes = upvotes
-                item.elapsed_mins = elapsed_mins
-                item.retailer_name = topictitle_retailer
-                item.first_post_time_obj = first_post_time_obj
-                item.first_post_time = first_post_time_string
-                item.reply_count = posts
-                item.view_count = views
-                item.topic_link = topic_title_link
-                upvotes_per_min = upvotes/elapsed_mins
-
-                # Find the same thread_id in MongoDB
-                db_documents = self.db.find(coll_name='spider_data', condition={'thread_id': thread_id}, limit=1)
-                
-                # Parse retailer name and deal title, compared with watch_list and return list of boolean
-                boolean_watchlist = self.match_watchlist(topictitle_retailer, topic_title, watch_list)
-                matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 try:
-                    msg_sent_counter = db_documents[0]['msg_sent_cnt']
+                    # Find the same thread_id in MongoDB
+                    db_topic = self.find_db_topic_by_id(topic.topic_id)
+                    msg_sent_counter = db_topic['msg_sent_cnt']
                 except:
-                    log.warning(f'New Added: {thread_id} [{upvotes} Votes] '
-                        f'@{"{:.2f}".format(elapsed_mins)}mins ago, '
-                        f'Brand: {topictitle_retailer}, Title: {topic_title}')
+                    self.log_new_topic(topic)
                     msg_sent_counter = 0
+            
+                # Parse retailer name and deal title, compared with watch_list and return list of boolean
+                # boolean_watchlist = self.match_watchlist(topic.dealer_name, topic.topic_title, watch_list)
+                # matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 # Collect the msg sending conditions, any of them is True
                 sendmsg_conditions_1 = [
-                    (upvotes >= 8), 
-                    (any(boolean_watchlist)),
-                    (upvotes/elapsed_mins >= 0.4)
+                    (topic.upvotes >= 8), 
+                    topic.matched_keywords,
+                    (topic.upvotes/topic.elapsed_mins >= 0.4)
                 ]
-                sendmsg_conditions_2 = [(upvotes >= 20),]
+                sendmsg_conditions_2 = [(topic.upvotes >= 20),]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
                     (any(sendmsg_conditions_2) and msg_sent_counter < 2):
-                    returned_msg = self.send_text_msg(item.to_dict, watchlist=f'{matched_keywords}*NEW*')
+                    # returned_msg = self.send_text_msg(topic, watchlist=f'{matched_keywords}*NEW*')
+                    returned_msg = self.send_text_msg(topic)
                     if returned_msg:
                         # If a deal has high upvotes, pin the msg in the channel
                         if any(sendmsg_conditions_2):
@@ -139,72 +116,43 @@ class RfdSpider(feapder.AirSpider):
                             )
 
                         msg_sent_counter += 1  # Record the sending count
-
+                
+                item = rfd_item.RfdTopicItem(topic)
                 item.msg_sent_cnt = msg_sent_counter
-                yield item  # 返回item， item会自动批量入库
+                yield item
     
-    @staticmethod
-    def upvotes(topic) -> int:
-        upvotes_soup = topic.find('dl', {'class':'post_voting'})
-        upvotes = int(upvotes_soup.text.strip('+')) if upvotes_soup else 0
-        return upvotes
-    
-    @classmethod
-    def first_post_time_obj(cls, topic):
-        first_post_time_raw = topic.find('span', class_='first-post-time').text.strip()
-        
-        return cls.resolve_times_from_topic(first_post_time_raw)
-
-    @staticmethod
-    def first_post_time_string(first_post_time_obj) -> str:
-        return datetime.strftime(first_post_time_obj, '%m-%d %H:%M')
-
-    @staticmethod
-    def elapsed_mins(first_post_time_obj) -> float:
-        now = datetime.now()
-        post_time = first_post_time_obj
-        return (now - post_time).total_seconds() / 60
-
-    @staticmethod
-    def resolve_times_from_topic(first_post_time_raw):
-        date_suffix_dict = {
-            "st": '',
-            "nd": '',
-            "rd": '',
-            "th": ''
-        }
-        for i, j in date_suffix_dict.items():
-            first_post_time_raw = first_post_time_raw.replace(i, j)
-        
-        return datetime.strptime(first_post_time_raw, '%b %d, %Y %I:%M %p')
-    
-    @staticmethod
-    def topictitle_retailer(topic) -> str:
-        try:
-            topictitle_retailer = topic.find('a', class_='topictitle_retailer').text.strip()
-        except:
-            topictitle_retailer = topic.find('h3', class_='topictitle').text.split('\n')[1].strip()
-        return topictitle_retailer
-    
-    def send_text_msg(self, item_dict, **kwargs):
-        watchlist_str = kwargs.get('watchlist', '*Hot*')
+    def send_text_msg(self, topic, **kwargs):
+        # watchlist_str = kwargs.get('watchlist', '*Hot*')
 
         # Get strings from item_dict
-        elapsed_mins = item_dict["elapsed_mins"]
-        upvotes = item_dict["upvotes"]
+        elapsed_mins = topic.elapsed_mins
+        upvotes = topic.upvotes
         upvotes_per_min = upvotes/elapsed_mins
-        topic_title = item_dict["topic_title"]
-        topic_link = item_dict["topic_link"]
-        retailer_name = item_dict["retailer_name"]
+        topic_title = topic.topic_title
+        topic_link = topic.topic_title_link
+        dealer_name = topic.dealer_name
+        offer_url = topic.offer_url
+        matched_keywords = topic.matched_keywords
 
+        if upvotes >= 8:
+            hot_emoji = '🔥' * round(upvotes / 8)
+            msg_header = f"{hot_emoji}*Hot Deal*:"
+        else:
+            if upvotes_per_min >= 0.4 and upvotes >= 2:
+                msg_header = "🚀*Trending Deal*:"
+            else:
+                msg_header = "🆕*New Deal*:"
+
+        keywords = f'({matched_keywords}) ' if matched_keywords else ''
+        
         msg_content = (
-            f'*Deal*: {watchlist_str} @*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'*Votes*: *{upvotes}* votes ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'*Title*: _({retailer_name.strip("[]")})_ `{(topic_title)}` \n'
-            f'[Click to open Deal link]({topic_link})'
+            f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+            f'👍*Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'📕*Title*: _({dealer_name.strip("[]")})_ {(topic_title)} \n'
+            f'🔗*Link*: {topic_link}'
         )
         
-        return self.send_bot_msg(msg_content, topic_link)
+        return self.send_bot_msg(msg_content, offer_url)
     
     def send_action(action):
         """Sends `action` while processing func command."""
@@ -219,14 +167,14 @@ class RfdSpider(feapder.AirSpider):
         return decorator
 
     @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, topic_link: str = None) -> bool:
+    def send_bot_msg(self, content_msg: str, offer_url: str = None) -> bool:
         log_content = content_msg.replace("\n", "")
         log.warning(f'## Sending: {log_content}')
 
-        if topic_link:
+        if offer_url:
             keyboard = [
                 [
-                    telegram.InlineKeyboardButton("Open Link", url=topic_link),
+                    telegram.InlineKeyboardButton("Open Direct Link", url=offer_url),
                 ],
             ]
             reply_markup = telegram.InlineKeyboardMarkup(keyboard)
@@ -248,19 +196,96 @@ class RfdSpider(feapder.AirSpider):
             return False
 
     @staticmethod
-    def match_watchlist(topictitle_retailer: str, topic_title: str, watch_list: List[str]) -> List[bool]:
+    def log_new_topic(topic):
+        offer_price_str = f'${topic.offer_price}' if topic.offer_price else ''
+        offer_savings_str = f', saving: {topic.offer_savings}' if topic.offer_savings else ''
+        
+        log.warning(
+            f'New Added: {topic.topic_id} ({topic.upvotes} Votes) '
+            f'{"{:.2f}".format(topic.elapsed_mins)}mins ago (@{topic.post_time_str}), '
+            f'Dealer: {topic.dealer_name}, Title: {topic.topic_title} '
+            f'{offer_price_str + offer_savings_str}'
+        )
+
+    def find_db_topic_by_id(self, topic_id) -> int:
+        return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)[0]
+
+    @staticmethod
+    def match_watchlist(
+        topictitle_retailer: str, 
+        topic_title: str, 
+        watch_list: List[str]
+    ) -> List[bool]:
         retailer_and_title = topictitle_retailer + ' ' + topic_title
         true_watchlist = [keyword in retailer_and_title.lower() for keyword in watch_list]
         return true_watchlist
     
     @staticmethod
-    def matched_keywords(boolean_watchlist: List[bool], watch_list: List[str]) -> str:
+    def matched_keywords(
+        boolean_watchlist: List[bool], 
+        watch_list: List[str]
+    ) -> str:
         if any(boolean_watchlist):
             matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
             return f'({"&".join(matches_list)}) '
         else:
             return ''
 
+
+class RfdTopic:
+    def __init__(self, topic, watch_list: List[str]):
+        self.topic_id = topic['topic_id']
+        self.topic_title = topic['title']
+        self.votes = topic['votes'] or {}
+        self.total_up = self.votes.get('total_up', 0)
+        self.total_down = self.votes.get('total_down', 0)
+        self.upvotes = self.total_up - self.total_down
+        self.total_replies = topic['total_replies']
+        self.total_views = topic['total_views']
+        self.summary = topic['summary'] or {}
+        self.summary_body = self.summary.get('body')
+        self.topic_title_link = 'https://forums.redflagdeals.com' + topic['web_path']
+        self.post_time = self.utc_to_local(topic['post_time'])
+        self.post_time_str = self.convert_dt_to_str(self.post_time)
+        self.last_post_time = self.utc_to_local(topic['last_post_time'])
+        self.elapsed_mins = self.compare_with_now(self.post_time)
+        self.offer = topic['offer']
+        self.dealer_name = self.offer['dealer_name'] or ""
+        self.offer_price = self.offer['price']
+        self.offer_url = self.offer['url']
+        self.offer_savings = self.offer['savings']
+        self.offer_expires_at = self.offer['expires_at']
+        self.watch_list = watch_list
+        # self.matched_watchlist_ind = any(self.watchlist_bool())
+    
+    @staticmethod
+    def utc_to_local(utc_dt: str) -> datetime:
+        utc_dt_iso = datetime.fromisoformat(utc_dt)
+        return utc_dt_iso.replace(tzinfo=timezone.utc).astimezone(tz=None).replace(tzinfo=None)
+    
+    @staticmethod
+    def convert_dt_to_str(post_time_obj: datetime) -> str:
+        return datetime.strftime(post_time_obj, '%m-%d %H:%M:%S')
+
+    @staticmethod
+    def compare_with_now(post_time_obj: datetime) -> float:
+        now = datetime.now()
+        return (now - post_time_obj).total_seconds() / 60
+    
+    @property
+    def watchlist_bool(self) -> List[bool]:
+        dealer_and_title = self.dealer_name + ' ' + self.topic_title
+        return [keyword in dealer_and_title.lower() for keyword in self.watch_list]
+    
+    @property
+    def matched_keywords(self) -> str:
+        if any(self.watchlist_bool):
+            keyword_list = [i for (i, v) in zip(self.watch_list, self.watchlist_bool) if v]
+            return f'{"&".join(keyword_list)}'
+        else:
+            return None
+
+
 if __name__ == '__main__':
-    spider = RfdSpider(thread_count=10)
+    spider = RfdSpider(thread_count=2)
     spider.start()
