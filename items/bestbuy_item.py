@@ -16,14 +16,13 @@ class BbShippingItem(UpdateItem):
     command: feapder create -i spider_data.
     """
 
-    def __init__(self, *args, **kwargs):
-        # self.identifier = None
-        self.sku = None
+    def __init__(self, product, *args, **kwargs):
+        self.sku = product.sku
         self.timestamp = None
-        self.quantity = None
-        self.status = None
+        self.quantity = product.shipping_quantity
+        self.status = product.shipping_status
         self.stock_type = None
-        self.seller_id = None
+        self.seller_id = product.seller_id
         # self.pickup_status = None
         # self.rmd_hill_quantity = None
         # self.pickup_locations = None
