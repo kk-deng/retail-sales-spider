@@ -74,47 +74,47 @@ def api_bestbuy_product():
         {
         "pickup": {
         "status": "OutOfStock",
-        "purchasable": false,
+        "purchasable": False,
         "locations": [
         {
         "name": "Richmond Hill",
         "locationKey": "956",
         "quantityOnHand": 0,
         "fulfillmentKey": "506",
-        "isReservable": false,
-        "hasInventory": false,
-        "supportsFulfillment": false,
-        "id": null,
-        "fulfillmentPartnerId": null
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
         },
         {
         "name": "Best Buy Mobile Centrepoint Mall",
         "locationKey": "237",
         "quantityOnHand": 0,
         "fulfillmentKey": "506",
-        "isReservable": false,
-        "hasInventory": false,
-        "supportsFulfillment": false,
-        "id": null,
-        "fulfillmentPartnerId": null
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
         },
         {
         "name": "Markham",
         "locationKey": "937",
         "quantityOnHand": 0,
         "fulfillmentKey": "506",
-        "isReservable": false,
-        "hasInventory": false,
-        "supportsFulfillment": false,
-        "id": null,
-        "fulfillmentPartnerId": null
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
         }
         ]
         },
         "shipping": {
         "status": "InStock",
         "quantityRemaining": 83,
-        "purchasable": true,
+        "purchasable": True,
         "levelsOfServices": [
         {
         "carrierId": "FEDX",
@@ -127,20 +127,20 @@ def api_bestbuy_product():
         "price": 0
         }
         ],
-        "orderLimit": null,
+        "orderLimit": None,
         "restrictedZoneRegions": [],
-        "hasActiveCountdown": true,
-        "countdownIsZone": false,
-        "preorderInfo": null,
-        "isFreeShippingEligible": true,
-        "isBackorderable": false
+        "hasActiveCountdown": True,
+        "countdownIsZone": False,
+        "preorderInfo": None,
+        "isFreeShippingEligible": True,
+        "isBackorderable": False
         },
         "sku": "14671247",
         "sellerId": "bbyca",
         "saleChannelExclusivity": "InStoreAndOnline",
-        "scheduledDelivery": false,
-        "isGiftCard": false,
-        "isService": false
+        "scheduledDelivery": False,
+        "isGiftCard": False,
+        "isService": False
         }
         ]
     }
