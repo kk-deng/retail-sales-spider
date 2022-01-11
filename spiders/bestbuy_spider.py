@@ -120,7 +120,7 @@ class BBSpider(feapder.AirSpider):
         ]
 
         self.products_dict[product_sku] = {key: response_json.get(key) for key in target_keys}
-
+  
     def parse(self, request, response):
         response_json = response.json
 
@@ -131,25 +131,32 @@ class BBSpider(feapder.AirSpider):
         try:
             for availability in availabilities:
                 product = BestBuyItem(availability)
-                now = datetime.now()
+                # Get product info from the saved product dictionary 
+                saved_product = self.products_dict[product.sku]
 
                 # Instantiate one item for mongoDB
-                item = bestbuy_item.BbShippingItem()
-                item.sku = product.sku
-                item.timestamp = now
-                item.quantity = product.shipping_quantity
-                item.status = product.shipping_status
+                item = bestbuy_item.BbShippingItem(product)
                 item.stock_type = 'shipping'
-                item.seller_id = product.seller_id
+                item.timestamp = datetime.now()
 
-                yield item
+                yield_conditions = [
+                    (saved_product.get('shipping_status') != product.shipping_status),
+                    (saved_product.get('quantityRemaining') != product.shipping_quantity),
+                    (saved_product.get('seller_id') != product.seller_id),
+                ]
+
+                # Only update the product_dict and MongoDB when there is change
+                if any(yield_conditions):
+                    yield item
+                    self.overwrite_product_dict(product)
 
                 if BB_SHIPPING_CHECK:
                     msg_content = self.resolve_shipping_msg(product)
 
                     if product.shipping_status in ['InStock', 'BackOrder'] and \
-                        product.shipping_quantity != self.products_dict[product.sku]['quantityRemaining'] and \
-                        self.products_dict[product.sku]['quantityRemaining']:
+                        product.shipping_quantity != saved_product['quantityRemaining'] and \
+                        saved_product['quantityRemaining'] \
+                        and product.sku != 14936769:
                         log.warning(msg_content)
                         self.send_bot_msg(msg_content)
                     else:
@@ -163,9 +170,6 @@ class BBSpider(feapder.AirSpider):
                         self.send_bot_msg(msg_content)
                     else:
                         log.info(msg_content)
-                
-                # Update quantity after fetching API
-                self.products_dict[product.sku]['quantityRemaining'] = product.shipping_quantity
             
             if len(out_of_stock_dict) > 0:
                 values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
@@ -175,6 +179,12 @@ class BBSpider(feapder.AirSpider):
         except Exception as e:
             log.info(f'Bestbuy info error...\n {e}')
     
+    def overwrite_product_dict(self, product):
+        saved_product = self.products_dict[product.sku]
+        saved_product['shipping_status'] = product.shipping_status
+        saved_product['quantityRemaining'] = product.shipping_quantity
+        saved_product['seller_id'] = product.seller_id
+
     def resolve_shipping_msg(self, product):
         if product.shipping_quantity > 0:
             # Use products info dict to fetch its meta data, and previous quantity
@@ -256,7 +266,7 @@ class BestBuyItem:
         else:
             return [loc for loc in locations if loc['quantityOnHand'] > 0]
 
-        
+
 if __name__ == '__main__':
     spider = BBSpider(thread_count=1)
     spider.start()
