@@ -1,5 +1,7 @@
+import pytest
 from items.bestbuy_item import BbShippingItem
 
+@pytest.mark.bestbuyitem
 def test_bestbuy_item_cls(api_bestbuy_product):
     item = BbShippingItem(api_bestbuy_product)
 
