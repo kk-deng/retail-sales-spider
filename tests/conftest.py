@@ -1,5 +1,6 @@
 import pytest
 from spiders.spider_man import RfdTopic
+from spiders.bestbuy_spider import BestBuyItem
 
 @pytest.fixture(autouse=True)
 def api_topic():
@@ -65,3 +66,86 @@ def api_topic():
     watch_list = [item.lower() for item in watch_list]
 
     return RfdTopic(info, watch_list)
+
+@pytest.fixture(autouse=True)
+def api_bestbuy_product():
+    availabilities = {
+        "availabilities": [
+        {
+        "pickup": {
+        "status": "OutOfStock",
+        "purchasable": False,
+        "locations": [
+        {
+        "name": "Richmond Hill",
+        "locationKey": "956",
+        "quantityOnHand": 0,
+        "fulfillmentKey": "506",
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
+        },
+        {
+        "name": "Best Buy Mobile Centrepoint Mall",
+        "locationKey": "237",
+        "quantityOnHand": 0,
+        "fulfillmentKey": "506",
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
+        },
+        {
+        "name": "Markham",
+        "locationKey": "937",
+        "quantityOnHand": 0,
+        "fulfillmentKey": "506",
+        "isReservable": False,
+        "hasInventory": False,
+        "supportsFulfillment": False,
+        "id": None,
+        "fulfillmentPartnerId": None
+        }
+        ]
+        },
+        "shipping": {
+        "status": "InStock",
+        "quantityRemaining": 83,
+        "purchasable": True,
+        "levelsOfServices": [
+        {
+        "carrierId": "FEDX",
+        "carrierName": "",
+        "deliveryDate": "2022-01-10T23:59:00Z",
+        "deliveryDateExpiresOn": "2022-01-08T15:00:00Z",
+        "deliveryDatePrecision": "1.00:00:00",
+        "id": "SOP_506-84_0_0_FEDX-GROUND_IR-SC",
+        "name": "",
+        "price": 0
+        }
+        ],
+        "orderLimit": None,
+        "restrictedZoneRegions": [],
+        "hasActiveCountdown": True,
+        "countdownIsZone": False,
+        "preorderInfo": None,
+        "isFreeShippingEligible": True,
+        "isBackorderable": False
+        },
+        "sku": "14671247",
+        "sellerId": "bbyca",
+        "saleChannelExclusivity": "InStoreAndOnline",
+        "scheduledDelivery": False,
+        "isGiftCard": False,
+        "isService": False
+        }
+        ]
+    }
+
+    availability = availabilities['availabilities'][0]
+
+    return BestBuyItem(availability)
+    

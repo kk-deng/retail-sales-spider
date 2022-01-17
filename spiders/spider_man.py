@@ -38,8 +38,8 @@ class RfdSpider(feapder.AirSpider):
     def start_callback(self):
         self.send_bot_msg('Bot started...')
     
-    def end_callback(self):
-        self.send_bot_msg('Bot Stopped...')
+    # def end_callback(self):
+    #     self.send_bot_msg('Bot Stopped...')
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -59,6 +59,8 @@ class RfdSpider(feapder.AirSpider):
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
+        
+        self.send_bot_msg('Bot Stopped...')
 
     def validate(self, request, response):
         if response.status_code != 200:
