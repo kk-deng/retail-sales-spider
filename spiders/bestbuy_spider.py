@@ -38,8 +38,8 @@ class BBSpider(feapder.AirSpider):
             # 15078017,
             # 15166285,
             # 15084753,
-            14936769,
-            14936767,
+            # 14936769,
+            # 14936767,
         ]
         self.skus_str = "|".join([str(sku) for sku in self.skus_list])
 
