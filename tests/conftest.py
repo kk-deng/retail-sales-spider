@@ -1,7 +1,7 @@
 import pytest
 from spiders.spider_man import RfdTopic
 from spiders.bestbuy_spider import BestBuyItem
-from random import random
+import random
 
 @pytest.fixture(autouse=True)
 def api_topic():
@@ -560,7 +560,9 @@ def api_ikea_products():
         }
     ]
 
-    return ikea_products
+    ikea_product = random.choice(ikea_products)
+
+    return ikea_product
 
 
 @pytest.fixture
@@ -633,6 +635,6 @@ def api_ikea_product_storeid():
         }
     ]
 
-    ikea_product = random.choice([ikea_product_contact_staff, ikea_product_instock])
+    ikea_product = random.choice([ikea_product_contact_staff[0], ikea_product_instock[0]])
 
     return ikea_product
