@@ -564,6 +564,438 @@ def api_ikea_products():
 
     return ikea_product
 
+@pytest.fixture
+def api_ikea_products_by_store():
+    products_by_store = [
+        {
+            "productId": "30412165",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "60363597",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "90289172",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "Estimated back in stock: <b>2022-02-13</b>",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "79009502",
+            "productType": "SPR",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "LOW_IN_STOCK",
+                "htmlText": "Running low at <b>Vaughan</b>",
+                "label": "Running low",
+                "description": "There are <b>1</b> in stock at Vaughan",
+                "colour": "#FFA524",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "Can be found in the <b>self-serve</b> area",
+                    "items": [
+                        {
+                            "title": "1 x MALM",
+                            "description": "bed frame, high",
+                            "articleNo": "702.494.84",
+                            "productId": "70249484",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "04",
+                                "bin": "02"
+                            }
+                        },
+                        {
+                            "title": "1 x SKORVA",
+                            "description": "center support beam",
+                            "articleNo": "901.245.34",
+                            "productId": "90124534",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "04",
+                                "bin": "35"
+                            }
+                        },
+                        {
+                            "title": "2 x MALM",
+                            "description": "underbed storage box for high bed",
+                            "articleNo": "602.527.21",
+                            "productId": "60252721",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "04",
+                                "bin": "05"
+                            }
+                        },
+                        {
+                            "title": "1 x LURÖY",
+                            "description": "slatted bed base",
+                            "articleNo": "001.602.15",
+                            "productId": "00160215",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "04",
+                                "bin": "36"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "70404818",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "40444255",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "50474341",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "Estimated back in stock: <b>2022-01-24</b>",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "99000483",
+            "productType": "SPR",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "MEDIUM_IN_STOCK",
+                "htmlText": "<b>In stock</b> at Vaughan",
+                "label": "In stock",
+                "description": "There are <b>5</b> in stock at Vaughan",
+                "colour": "#FFA524",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "Can be found in the <b>self-serve</b> area",
+                    "items": [
+                        {
+                            "title": "1 x TÄRENDÖ",
+                            "description": "tabletop",
+                            "articleNo": "302.422.91",
+                            "productId": "30242291",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "29",
+                                "bin": "11"
+                            }
+                        },
+                        {
+                            "title": "1 x TÄRENDÖ",
+                            "description": "underframe",
+                            "articleNo": "702.450.42",
+                            "productId": "70245042",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "29",
+                                "bin": "12"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "00196101",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "OTHER",
+            "productLocation": "Home Organisation",
+            "status": {
+                "code": "HIGH_IN_STOCK",
+                "htmlText": "<b>In stock</b> at Vaughan",
+                "label": "In stock",
+                "description": "There are <b>229</b> in stock at Vaughan",
+                "colour": "#0A8A00",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "Can be found in <b>Home Organisation</b>",
+                    "items": [
+                        {
+                            "title": "1 x FIXA",
+                            "description": "screwdriver/drill, lithium-ion",
+                            "articleNo": "001.961.01",
+                            "productId": "00196101",
+                            "itemLocation": "Home Organisation"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "80361564",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "20206806",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "HIGH_IN_STOCK",
+                "htmlText": "<b>In stock</b> at Vaughan",
+                "label": "In stock",
+                "description": "There are <b>2</b> in stock at Vaughan",
+                "colour": "#0A8A00",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "<b>Contact staff</b>",
+                    "items": [
+                        {
+                            "title": "1 x IKEA PS 2012",
+                            "description": "drop-leaf table",
+                            "articleNo": "202.068.06",
+                            "productId": "20206806",
+                            "itemLocation": "CONTACT STAFF"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "30473154",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "44881100",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "Estimated back in stock: <b>2022-01-22</b>",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "00278578",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "HIGH_IN_STOCK",
+                "htmlText": "<b>In stock</b> at Vaughan",
+                "label": "In stock",
+                "description": "There are <b>66</b> in stock at Vaughan",
+                "colour": "#0A8A00",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "Can be found in the <b>self-serve</b> area",
+                    "items": [
+                        {
+                            "title": "1 x HYLLIS",
+                            "description": "shelf unit",
+                            "articleNo": "002.785.78",
+                            "productId": "00278578",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "37",
+                                "bin": "20"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "30428326",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "SELF_SERVICE",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "HIGH_IN_STOCK",
+                "htmlText": "<b>In stock</b> at Vaughan",
+                "label": "In stock",
+                "description": "There are <b>205</b> in stock at Vaughan",
+                "colour": "#0A8A00",
+                "timestamp": ""
+            },
+            "locations": [
+                {
+                    "heading": "Can be found in the <b>self-serve</b> area",
+                    "items": [
+                        {
+                            "title": "1 x HYLLIS",
+                            "description": "shelf unit",
+                            "articleNo": "304.283.26",
+                            "productId": "30428326",
+                            "itemLocation": "SELF-SERVICE",
+                            "shelfOrRack": {
+                                "aisle": "35",
+                                "bin": "21"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "productId": "99291745",
+            "productType": "SPR",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "SELF-SERVICE",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "40201916",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "There are <b>0</b> in stock at Vaughan",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        },
+        {
+            "productId": "70294339",
+            "productType": "ART",
+            "storeId": "372",
+            "salePoint": "CONTACT_STAFF",
+            "productLocation": "CONTACT STAFF",
+            "status": {
+                "code": "OUT_OF_STOCK",
+                "htmlText": "Out of stock at <b>Vaughan</b>",
+                "label": "Out of stock",
+                "description": "Estimated back in stock: <b>2022-01-21</b>",
+                "colour": "#E00751",
+                "timestamp": ""
+            },
+            "locations": []
+        }
+    ]
+
+    return random.choice(products_by_store)
 
 @pytest.fixture
 def api_ikea_product_storeid():
