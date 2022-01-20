@@ -29,24 +29,38 @@ class IkeaSpider(feapder.AirSpider):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.newbot_token)
-        self.id_list = [
-            10413528,
-            90301621,
-            70339291,
-            60427293,
-            30387118,
-            20436713,
+        self.art_id_list = [
+            '10413528',
+            '90301621',
+            '70339291',
+            '60427293',
+            '30387118',
+            '20436713',
         ]
-        self.products_dict = {product_id: {} for product_id in self.id_list}
+        self.spr_id_list = [
+            '79009502',
+            '99000483',
+            '99291745',
+        ]
+        self.products_dict = {product_id: {} for product_id in self.art_id_list + self.spr_id_list}
+    
+    @property
+    def id_url_str(self):
+        art_str = ','.join([f'ART-{pid}' for pid in self.art_id_list])
+        spr_str = ','.join([f'SPR-{pid}' for pid in self.spr_id_list])
+
+        return art_str + ',' + spr_str
 
     def start_requests(self):
 
         for i in range(1, SCRAPE_COUNT):
 
-            for pid in self.id_list:
-                url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/product/ART,{pid}?storeIds=372"
-                yield feapder.Request(url, method="GET")
-                time.sleep(3)
+            # for pid in self.id_list:
+            #     url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/product/ART,{pid}?storeIds=372"
+            #     yield feapder.Request(url, method="GET")
+            #     time.sleep(3)
+
+            url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/372/{self.id_url_str}"
             
             # Now time
             now = datetime.now().time()
@@ -100,10 +114,22 @@ class IkeaSpider(feapder.AirSpider):
             if any(yield_conditions):
                 # yield item
 
+                # If status_code changed, return a change string
+                if yield_conditions[0]:
+                    msg_status_code = f'{saved_product.get("status_code", "Unknown")} -> {ikea_product.status_code}'
+                else:
+                    msg_status_code = ikea_product.status_code
+                
+                # If stock_num changed, return a change string
+                if yield_conditions[0]:
+                    msg_stock_num = f'{saved_product.get("stock_num", 0)} -> {ikea_product.stock_num}'
+                else:
+                    msg_stock_num = ikea_product.stock_num
+
                 msg_content = (
-                    f'*ID*: _{ikea_product.product_id}_ \n'
-                    f'(*{ikea_product.product_id}*) is *{ikea_product.status_code}* with sale *{ikea_product.sale_point}*. \n'
-                    f'*Quantity*: *{saved_product.get("stock_num", 0)}->{ikea_product.stock_num}*'
+                    f'*Name*: _{ikea_product.title}_ (*{ikea_product.product_id}*)\n'
+                    f'*Status*: {msg_status_code} at *{ikea_product.sale_point}*. \n'
+                    f'*Quantity*: *{msg_stock_num}*'
                 )
 
                 self.send_bot_msg(msg_content)
@@ -112,13 +138,16 @@ class IkeaSpider(feapder.AirSpider):
         
         # print(response.json)
             
-    def overwrite_products_dict(self, product):
-        saved_product = self.products_dict[product.product_id]
-        saved_product['store_id'] = product.store_id
-        saved_product['sale_point'] = product.sale_point
-        saved_product['status_code'] = product.status_code
-        saved_product['stock_num'] = product.stock_num
-        saved_product['store_name'] = product.store_name
+    def overwrite_products_dict(self, ikea_product):
+        saved_product = self.products_dict[ikea_product.product_id]
+        saved_product['store_id'] = ikea_product.store_id
+        saved_product['sale_point'] = ikea_product.sale_point
+        saved_product['status_code'] = ikea_product.status_code
+        saved_product['stock_num'] = ikea_product.stock_num
+        saved_product['store_name'] = ikea_product.store_name
+        saved_product['title'] = ikea_product.title
+        if product.restock_date:
+            saved_product['restock_date'] = ikea_product.restock_date
     
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
@@ -148,7 +177,8 @@ class IkeaProduct:
     }
 
     def __init__(self, ikea_product):
-        self.product_id = int(ikea_product.get('productId'))
+        self.product_id = ikea_product.get('productId')
+        self.product_type = ikea_product.get('productType')
         self.store_id = ikea_product.get('storeId')
         self.sale_point = ikea_product.get('salePoint')
         self.status = ikea_product.get('status')
@@ -163,6 +193,31 @@ class IkeaProduct:
             return int(stock_num)
         else:
             return 0
+
+    @property
+    def items(self): 
+        locations = self.status.get('locations')
+        try:
+            return locations[0]['items']
+        except:
+            return {}
+    
+    @property
+    def title(self):
+        try:
+            return self.items[0]['title']
+        except:
+            return 'Unknown'
+    
+    @property
+    def restock_date(self):
+        description = self.status.get('description')
+        if 'Estimated' in description:
+            # Extract date from "Estimated back in stock: <b>2022-01-21</b>"
+            return description.split('<b>')[1].split('</b>')[0]
+        else:
+            return None
+
 
 if __name__ == "__main__":
     IkeaSpider(thread_count=1).start()
