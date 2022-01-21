@@ -10,16 +10,23 @@ def test_ikea_item_cls(api_ikea_products_by_store):
     assert len(product.product_id) == 8
     assert len(product.store_id) == 3
     assert type(product.sale_point) == str
-    assert product.status_code in ['HIGH_IN_STOCK', 'OUT_OF_STOCK', 'LOW_IN_STOCK']
+    assert product.status_code in ['HIGH_IN_STOCK', 'OUT_OF_STOCK', 'LOW_IN_STOCK', 'MEDIUM_IN_STOCK']
+
+    # Only out_of_stock will get 0 inventory
     if product.status_code == 'OUT_OF_STOCK':
         assert product.stock_num == 0
     else:
         assert product.stock_num > 0
-    
-    assert type(product.items) == dict
 
     # Assert the "Estimated back in stock: <b>2022-01-21</b>"
-    assert product.restock_date == '2022-01-21'
+    if product.restock_date:
+        assert product.restock_date.split('-')[0] == '2022'
+
+    # When in stock, check if items show location information
+    if product.status_code != 'OUT_OF_STOCK':
+        assert type(product.items) == list
+        assert len(product.items) > 0
+        assert product.title != 'Unknown'
 
 
 @pytest.mark.ikeaitem
