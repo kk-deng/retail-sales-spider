@@ -36,6 +36,7 @@ class IkeaSpider(feapder.AirSpider):
             '60427293',
             '30387118',
             '20436713',
+            '10287049',
         ]
         self.spr_id_list = [
             '79009502',
@@ -43,6 +44,7 @@ class IkeaSpider(feapder.AirSpider):
             '99291745',
         ]
         self.products_dict = {product_id: {} for product_id in self.art_id_list + self.spr_id_list}
+        self.log_msg = ''
     
     @property
     def id_url_str(self):
@@ -61,7 +63,8 @@ class IkeaSpider(feapder.AirSpider):
             #     time.sleep(3)
 
             url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/372/{self.id_url_str}"
-            
+            yield feapder.Request(url, method="GET")
+
             # Now time
             now = datetime.now().time()
 
@@ -77,6 +80,9 @@ class IkeaSpider(feapder.AirSpider):
             if SCRAPE_COUNT > 2:
                 log.info(f'## IKEA running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
+            
+            if i % 2 == 0:
+                log.info(self.log_msg)
 
     def download_midware(self, request):
         request.headers = {
@@ -95,6 +101,8 @@ class IkeaSpider(feapder.AirSpider):
 
     def parse(self, request, response):
         ikea_products = response.json
+
+        out_of_stock_dict = {}
 
         for product in ikea_products:
             ikea_product = IkeaProduct(product)
@@ -128,13 +136,19 @@ class IkeaSpider(feapder.AirSpider):
 
                 msg_content = (
                     f'*Name*: _{ikea_product.title}_ (*{ikea_product.product_id}*)\n'
-                    f'*Status*: {msg_status_code} at *{ikea_product.sale_point}*. \n'
+                    f'*Status*: *{msg_status_code}* at *{ikea_product.sale_point}*. \n'
                     f'*Quantity*: *{msg_stock_num}*'
                 )
 
                 self.send_bot_msg(msg_content)
 
                 self.overwrite_products_dict(ikea_product)
+            
+            # Example: {10413528: 'HIGH_IN_STOCK(14)'}
+            out_of_stock_dict[ikea_product.product_id] =  f'{ikea_product.title}-{ikea_product.status_code}({str(ikea_product.stock_num)})'
+        
+        values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
+        self.log_msg = 'IKEA Stock: ' + ', '.join(values)
         
         # print(response.json)
             
@@ -146,7 +160,7 @@ class IkeaSpider(feapder.AirSpider):
         saved_product['stock_num'] = ikea_product.stock_num
         saved_product['store_name'] = ikea_product.store_name
         saved_product['title'] = ikea_product.title
-        if product.restock_date:
+        if ikea_product.restock_date:
             saved_product['restock_date'] = ikea_product.restock_date
     
     def send_bot_msg(self, content_msg: str) -> bool:
@@ -184,6 +198,7 @@ class IkeaProduct:
         self.status = ikea_product.get('status')
         self.status_code = self.status.get('code')
         self.store_name = self.store_list.get(self.store_id, "Other")
+        self.locations = ikea_product.get('locations')
         
     @property
     def stock_num(self):
@@ -196,11 +211,10 @@ class IkeaProduct:
 
     @property
     def items(self): 
-        locations = self.status.get('locations')
         try:
-            return locations[0]['items']
+            return self.locations[0]['items']
         except:
-            return {}
+            return []
     
     @property
     def title(self):
