@@ -30,6 +30,7 @@ class IkeaSpider(feapder.AirSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
+        self.ikea_header = self.file_operator.get_spider_header('ikea')
         self.bot = telegram.Bot(token=self.file_operator.newbot_token)
         self.art_id_list = [
             '10413528',
@@ -58,12 +59,14 @@ class IkeaSpider(feapder.AirSpider):
     def start_requests(self):
 
         for i in range(1, SCRAPE_COUNT):
-
+            
+            # Search one product in different IKEA stores
             # for pid in self.id_list:
             #     url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/product/ART,{pid}?storeIds=372"
             #     yield feapder.Request(url, method="GET")
             #     time.sleep(3)
 
+            # Search multiple products in one IKEA store
             url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/{self.store_id}/{self.id_url_str}"
             yield feapder.Request(url, method="GET")
 
@@ -87,18 +90,7 @@ class IkeaSpider(feapder.AirSpider):
                 log.info(self.log_msg)
 
     def download_midware(self, request):
-        request.headers = {
-            "Host": "shop.api.ingka.ikea.com",
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "IOS-Build-Nr": "4660",
-            "Contract": "40663",
-            "Accept": "application/json",
-            "User-Agent": "IKEA App/3.8.2-4660 (iOS)",
-            "Consumer": "IKEAAPPI",
-            "Accept-Language": "en-ca",
-            "Accept-Encoding": "gzip, deflate, br"
-        }
+        request.headers = self.ikea_header
         return request
 
     def parse(self, request, response):

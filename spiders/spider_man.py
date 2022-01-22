@@ -33,7 +33,7 @@ class RfdSpider(feapder.AirSpider):
         self.rfd_api = self.file_operator.rfd_api
         self.rfd_api_params = self.file_operator.rfd_api_params
         self.bot = telegram.Bot(token=self.file_operator.token)
-        self.rfd_header = self.file_operator.create_random_header['rfd']
+        self.rfd_header = self.file_operator.get_spider_header('rfd')
 
     def start_callback(self):
         self.send_bot_msg('Bot started...')

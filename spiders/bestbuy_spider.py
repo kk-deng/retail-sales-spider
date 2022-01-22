@@ -29,7 +29,7 @@ class BBSpider(feapder.AirSpider):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
         self.bot = telegram.Bot(token=self.file_operator.newbot_token)
-        self.random_header = self.file_operator.create_random_header
+        self.spider_header = self.file_operator.get_spider_header('bestbuy')
         self.products_dict = {}
         self.skus_list = [
             15604563,
@@ -45,8 +45,7 @@ class BBSpider(feapder.AirSpider):
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
-        request.headers = self.random_header['bestbuy']
-
+        request.headers = self.spider_header
         return request
 
     def start_requests(self):
