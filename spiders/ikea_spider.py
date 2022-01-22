@@ -25,6 +25,8 @@ SCRAPE_COUNT = 1000
 
 
 class IkeaSpider(feapder.AirSpider):
+    store_id = '372'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
@@ -62,7 +64,7 @@ class IkeaSpider(feapder.AirSpider):
             #     yield feapder.Request(url, method="GET")
             #     time.sleep(3)
 
-            url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/372/{self.id_url_str}"
+            url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/{self.store_id}/{self.id_url_str}"
             yield feapder.Request(url, method="GET")
 
             # Now time
@@ -129,7 +131,7 @@ class IkeaSpider(feapder.AirSpider):
                     msg_status_code = ikea_product.status_code
                 
                 # If stock_num changed, return a change string
-                if yield_conditions[0]:
+                if yield_conditions[1]:
                     msg_stock_num = f'{saved_product.get("stock_num", 0)} -> {ikea_product.stock_num}'
                 else:
                     msg_stock_num = ikea_product.stock_num
@@ -159,7 +161,9 @@ class IkeaSpider(feapder.AirSpider):
         saved_product['status_code'] = ikea_product.status_code
         saved_product['stock_num'] = ikea_product.stock_num
         saved_product['store_name'] = ikea_product.store_name
-        saved_product['title'] = ikea_product.title
+        if saved_product['title'] == 'Unknown':
+            saved_product['title'] = ikea_product.title
+            
         if ikea_product.restock_date:
             saved_product['restock_date'] = ikea_product.restock_date
     
