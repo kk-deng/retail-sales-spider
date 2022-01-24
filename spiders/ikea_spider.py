@@ -20,8 +20,6 @@ from tools import *
 # from utils.helpers import escape_markdown
 
 SCRAPE_COUNT = 1000
-# BB_SHIPPING_CHECK = True
-# BB_PICKUP_CHECK = False
 
 
 class IkeaSpider(feapder.AirSpider):
@@ -32,27 +30,34 @@ class IkeaSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.ikea_header = self.file_operator.get_spider_header('ikea')
         self.bot = telegram.Bot(token=self.file_operator.newbot_token)
-        self.art_id_list = [
-            '10413528',
-            '90301621',
-            '70339291',
-            '60427293',
-            '30387118',
-            '20436713',
-            '10287049',
-        ]
-        self.spr_id_list = [
-            '79009502',
-            '99000483',
-            '99291745',
-        ]
-        self.products_dict = {product_id: {} for product_id in self.art_id_list + self.spr_id_list}
+        self.art_id_dict = {
+            '10413528': 'HEMNES TV bench',
+            '70339291': 'FJÄLLBO Shelf unit',
+            '70342199': 'FJÄLLBO Shelf unit Small',
+            '60427293': 'KNOPPÄNG Frame W',
+            '30387118': 'KNOPPÄNG Frame B',
+            '20436713': 'BAGGEBO Bookcase',
+            '10287049': 'STRELITZIA Potted plant',
+        }
+        self.spr_id_dict = {
+            '99291745': 'HYLLIS shelving unit',
+        }
         self.log_msg = ''
     
     @property
+    def products_dict(self):
+        art_id_dict_copy = self.art_id_dict.copy()
+        art_id_dict_copy.update(self.spr_id_dict)
+        return {
+            product_id: {'title': name}
+            for product_id, name in
+            art_id_dict_copy.items()
+        }
+
+    @property
     def id_url_str(self):
-        art_str = ','.join([f'ART-{pid}' for pid in self.art_id_list])
-        spr_str = ','.join([f'SPR-{pid}' for pid in self.spr_id_list])
+        art_str = ','.join([f'ART-{pid}' for pid in self.art_id_dict.keys()])
+        spr_str = ','.join([f'SPR-{pid}' for pid in self.spr_id_dict.keys()])
 
         return art_str + ',' + spr_str
 
@@ -105,7 +110,7 @@ class IkeaSpider(feapder.AirSpider):
 
             if not saved_product.get('stock_num'):
                 # If return None, initialize the dict
-                self.overwrite_products_dict(ikea_product)
+                self.overwrite_products_dict(saved_product, ikea_product)
             
             yield_conditions = [
                 (saved_product.get('status_code') != ikea_product.status_code),
@@ -129,7 +134,7 @@ class IkeaSpider(feapder.AirSpider):
                     msg_stock_num = ikea_product.stock_num
 
                 msg_content = (
-                    f'*Name*: _{ikea_product.title}_ (*{ikea_product.product_id}*)\n'
+                    f'*Name*: _{saved_product["title"]}_ (*{ikea_product.product_id}*)\n'
                     f'*Status*: *{msg_status_code}* at *{ikea_product.sale_point}*. \n'
                     f'*Quantity*: *{msg_stock_num}*'
                 )
@@ -139,20 +144,20 @@ class IkeaSpider(feapder.AirSpider):
                 self.overwrite_products_dict(ikea_product)
             
             # Example: {10413528: 'HIGH_IN_STOCK(14)'}
-            out_of_stock_dict[ikea_product.product_id] =  f'{ikea_product.title}-{ikea_product.status_code}({str(ikea_product.stock_num)})'
+            out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({str(ikea_product.stock_num)})'
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
         
         # print(response.json)
             
-    def overwrite_products_dict(self, ikea_product):
-        saved_product = self.products_dict[ikea_product.product_id]
+    def overwrite_products_dict(self, saved_product, ikea_product):
         saved_product['store_id'] = ikea_product.store_id
         saved_product['sale_point'] = ikea_product.sale_point
         saved_product['status_code'] = ikea_product.status_code
         saved_product['stock_num'] = ikea_product.stock_num
         saved_product['store_name'] = ikea_product.store_name
+        # If saved product has no title, then assign from the new result
         if saved_product['title'] == 'Unknown':
             saved_product['title'] = ikea_product.title
             
