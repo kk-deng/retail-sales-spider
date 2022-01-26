@@ -42,13 +42,13 @@ class IkeaSpider(feapder.AirSpider):
         self.spr_id_dict = {
             '99291745': 'HYLLIS shelving unit',
         }
+        self.products_dict = {}
         self.log_msg = ''
     
-    @property
-    def products_dict(self):
+    def initialized_products_dict(self):
         art_id_dict_copy = self.art_id_dict.copy()
         art_id_dict_copy.update(self.spr_id_dict)
-        return {
+        self.products_dict = {
             product_id: {'title': name}
             for product_id, name in
             art_id_dict_copy.items()
@@ -62,6 +62,7 @@ class IkeaSpider(feapder.AirSpider):
         return art_str + ',' + spr_str
 
     def start_requests(self):
+        self.initialized_products_dict()
 
         for i in range(1, SCRAPE_COUNT):
             
@@ -106,12 +107,12 @@ class IkeaSpider(feapder.AirSpider):
         for product in ikea_products:
             ikea_product = IkeaProduct(product)
 
+            if len(self.products_dict[ikea_product.product_id]) == 1:
+                # If return None, initialize the dict
+                self.overwrite_products_dict(ikea_product)
+            
             saved_product = self.products_dict[ikea_product.product_id]
 
-            if not saved_product.get('stock_num'):
-                # If return None, initialize the dict
-                self.overwrite_products_dict(saved_product, ikea_product)
-            
             yield_conditions = [
                 (saved_product.get('status_code') != ikea_product.status_code),
                 (saved_product.get('stock_num') != ikea_product.stock_num),
@@ -119,8 +120,6 @@ class IkeaSpider(feapder.AirSpider):
 
             # Only update the product_dict and MongoDB when there is change
             if any(yield_conditions):
-                # yield item
-
                 # If status_code changed, return a change string
                 if yield_conditions[0]:
                     msg_status_code = f'{saved_product.get("status_code", "Unknown")} -> {ikea_product.status_code}'
@@ -150,19 +149,17 @@ class IkeaSpider(feapder.AirSpider):
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
         
         # print(response.json)
-            
-    def overwrite_products_dict(self, saved_product, ikea_product):
-        saved_product['store_id'] = ikea_product.store_id
-        saved_product['sale_point'] = ikea_product.sale_point
-        saved_product['status_code'] = ikea_product.status_code
-        saved_product['stock_num'] = ikea_product.stock_num
-        saved_product['store_name'] = ikea_product.store_name
-        # If saved product has no title, then assign from the new result
-        if saved_product['title'] == 'Unknown':
-            saved_product['title'] = ikea_product.title
+
+    def overwrite_products_dict(self, ikea_product):
+        staged_product = self.products_dict[ikea_product.product_id]
+        staged_product['store_id'] = ikea_product.store_id
+        staged_product['sale_point'] = ikea_product.sale_point
+        staged_product['status_code'] = ikea_product.status_code
+        staged_product['stock_num'] = ikea_product.stock_num
+        staged_product['store_name'] = ikea_product.store_name
             
         if ikea_product.restock_date:
-            saved_product['restock_date'] = ikea_product.restock_date
+            staged_product['restock_date'] = ikea_product.restock_date
     
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
@@ -200,7 +197,11 @@ class IkeaProduct:
         self.status_code = self.status.get('code')
         self.store_name = self.store_list.get(self.store_id, "Other")
         self.locations = ikea_product.get('locations')
-        
+    
+    def __str__(self):
+        return str(self.__class__) + '\n' + \
+            '\n'.join((str(item) + ' = ' + str(self.__dict__[item]) for item in sorted(self.__dict__)))
+
     @property
     def stock_num(self):
         if self.status_code in ['HIGH_IN_STOCK', 'LOW_IN_STOCK']:
