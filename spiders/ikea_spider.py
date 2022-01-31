@@ -2,7 +2,7 @@
 """
 Created on 2022-01-16 17:06:12
 ---------
-@summary: A IKEA spider which can scraped sales quantity of specific SKUs.
+@summary: An IKEA spider which can scraped sales quantity of specific SKUs.
 ---------
 @author: Kelvin
 """
@@ -19,7 +19,7 @@ from feapder.utils.log import log
 from tools import *
 # from utils.helpers import escape_markdown
 
-SCRAPE_COUNT = 1000
+SCRAPE_COUNT = 1200
 
 
 class IkeaSpider(feapder.AirSpider):
@@ -130,7 +130,10 @@ class IkeaSpider(feapder.AirSpider):
                 if yield_conditions[1]:
                     msg_stock_num = f'{saved_product.get("stock_num", 0)} -> {ikea_product.stock_num}'
                 else:
-                    msg_stock_num = ikea_product.stock_num
+                    if ikea_product.restock_date:
+                        msg_stock_num = ikea_product.restock_date
+                    else:
+                        msg_stock_num = ikea_product.stock_num
 
                 msg_content = (
                     f'*Name*: _{saved_product["title"]}_ (*{ikea_product.product_id}*)\n'
@@ -142,8 +145,13 @@ class IkeaSpider(feapder.AirSpider):
 
                 self.overwrite_products_dict(ikea_product)
             
+            if ikea_product.restock_date:
+                log_stock_num = ikea_product.restock_date
+            else:
+                log_stock_num = ikea_product.stock_num
+
             # Example: {10413528: 'HIGH_IN_STOCK(14)'}
-            out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({str(ikea_product.stock_num)})'
+            out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({log_stock_num})'
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
