@@ -12,6 +12,7 @@ class FileReadWrite:
         self.watchlist_csv_path = r'resources\watchlist.csv'
         self.rfd_api = self.__import_keys['rfd_api']
         self.rfd_api_params = self.__import_keys['rfd_api_params']
+        self.ikea_api = self.__import_keys['ikea_api']
         self.token = self.__import_keys['token']
         self.newbot_token = self.__import_keys['newbot_token']
         self.chat_id = self.__import_keys['chat_id']
@@ -83,41 +84,54 @@ class FileReadWrite:
         except:
             return []
 
-    @property
-    def create_random_header(self):
+    def get_spider_header(self, website: str) -> dict:
         with open('resources/user_agent.json') as s:
             ua_list = json.load(s)
             # Get a random index within the json list length
             random_ua = random.choice(ua_list)['useragent']
-            ua_list = {"rfd": {
-                            "Host": "forums.redflagdeals.com",
-                            "API-Key-Version": "1",
-                            "API-Version": "1.0",
-                            "Accept": "*/*",
-                            "User-Agent": "RedFlagDeals/6063 CFNetwork/1209 Darwin/20.2.0",
-                            "Accept-Language": "en-ca",
-                            "Accept-Encoding": "gzip, deflate, br",
-                            "Connection": "keep-alive"
-                        },
-                        "costco": {
-                            "accept": "pplication/json, text/javascript, */*; q=0.01",
-                            "accept-encoding": 'gzip, deflate, br',
-                            "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
-                            "user-agent": random_ua,
-                            'referer': 'https://www.costco.ca/'},
-                        "bestbuy": {
-                            "user-agent": random_ua,
-                            "referer": 'https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336',
-                            "dnt": '1',
-                            "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
-                            'authority': 'www.bestbuy.ca',
-                            'pragma': 'no-cache',
-                            'cache-control': 'no-cache',
-                            'accept': '*/*',
-                            'sec-fetch-site': 'same-origin',
-                            'sec-fetch-mode': 'cors',
-                            'sec-fetch-dest': 'empty',
-                            "Cookie": self.bby_cookies,
-                        }
+            ua_list = {
+                "rfd": {
+                    "Host": "forums.redflagdeals.com",
+                    "API-Key-Version": "1",
+                    "API-Version": "1.0",
+                    "Accept": "*/*",
+                    "User-Agent": "RedFlagDeals/6063 CFNetwork/1209 Darwin/20.2.0",
+                    "Accept-Language": "en-ca",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Connection": "keep-alive"
+                },
+                "costco": {
+                    "accept": "pplication/json, text/javascript, */*; q=0.01",
+                    "accept-encoding": 'gzip, deflate, br',
+                    "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
+                    "user-agent": random_ua,
+                    'referer': 'https://www.costco.ca/'
+                },
+                "bestbuy": {
+                    "user-agent": random_ua,
+                    "referer": 'https://www.bestbuy.ca/en-ca/product/playstation-5-console/15689336',
+                    "dnt": '1',
+                    "accept-language": 'zh-CN,zh;q=0.9,en-CA;q=0.8,en;q=0.7',
+                    'authority': 'www.bestbuy.ca',
+                    'pragma': 'no-cache',
+                    'cache-control': 'no-cache',
+                    'accept': '*/*',
+                    'sec-fetch-site': 'same-origin',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-dest': 'empty',
+                    "Cookie": self.bby_cookies,
+                },
+                "ikea": {
+                    "Host": "shop.api.ingka.ikea.com",
+                    "Content-Type": "application/json",
+                    "Connection": "keep-alive",
+                    "IOS-Build-Nr": "4660",
+                    "Contract": "40663",
+                    "Accept": "application/json",
+                    "User-Agent": "IKEA App/3.8.2-4660 (iOS)",
+                    "Consumer": "IKEAAPPI",
+                    "Accept-Language": "en-ca",
+                    "Accept-Encoding": "gzip, deflate, br"
+                }
             }
-        return ua_list
+        return ua_list[website]

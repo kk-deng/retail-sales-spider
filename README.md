@@ -1,12 +1,30 @@
 # Bestbuy & RFD Deals Spider
 
-A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from Bestbuy website and send telegram messages when stocks of products change.
+A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website and send telegram messages when stocks of products change. 
 
-For all new scraped items/products, this spider will store in a cloud database service, e.g. MongoDB Atlas.
+It can also web scrape trending deals from **Redflagdeals** forum and alert users through telegram bot channels.
+
+For all new scraped items/products, this spider will create a NoSQL connection to a cloud database service, e.g. MongoDB Atlas.
+
+## Modules
+
+* [Bestbuy Spider Class][https://github.com/kk-deng/retail-sales-spider/blob/main/spiders/bestbuy_spider.py]
+* [IKEA.ca Spider Class][https://github.com/kk-deng/retail-sales-spider/blob/main/spiders/ikea_spider.py]
+* [Redflagdeals Spider Class][https://github.com/kk-deng/retail-sales-spider/blob/main/spiders/spider_man.py]
+
+## Unit Test Codes - PyTest
+
+* [PyTest Fixtures][https://github.com/kk-deng/retail-sales-spider/blob/main/tests/conftest.py]
+  * [Bestbuy Unit Test][https://github.com/kk-deng/retail-sales-spider/blob/main/tests/test_spiders/test_bestbuy.py]
+  * [IKEA.ca Unit Test][https://github.com/kk-deng/retail-sales-spider/blob/main/tests/test_spiders/test_ikea.py]
+  * [Redflagdeals Unit Test][https://github.com/kk-deng/retail-sales-spider/blob/main/tests/test_spiders/test_rfdtopic.py]
 
 ## Usage
 
 Create a `settings.json` file under `/resources` folder with the following information:
+
+*Note: The rfd_api was hidden because it is reverse engineered. To protect it from being potentially abused, it is not shown here.*
+
 ```json
 {
     "rfd_api":  <hidden>,
