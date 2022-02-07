@@ -31,6 +31,9 @@ def test_ikea_item_cls(api_ikea_products_by_store):
     print(product)
     assert type(product.__str__()) == str
 
+    # if product.restock_date:
+    assert product.restock_date.split('-')[0] == '2022'
+
 
 @pytest.mark.ikeaitem
 def test_ikea_item_spider():
