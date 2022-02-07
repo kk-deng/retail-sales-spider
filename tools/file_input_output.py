@@ -12,6 +12,7 @@ class FileReadWrite:
         self.watchlist_csv_path = r'resources\watchlist.csv'
         self.rfd_api = self.__import_keys['rfd_api']
         self.rfd_api_params = self.__import_keys['rfd_api_params']
+        self.ikea_api = self.__import_keys['ikea_api']
         self.token = self.__import_keys['token']
         self.newbot_token = self.__import_keys['newbot_token']
         self.chat_id = self.__import_keys['chat_id']
@@ -133,4 +134,4 @@ class FileReadWrite:
                     "Accept-Encoding": "gzip, deflate, br"
                 }
             }
-        return ua_list
+        return ua_list[website]
