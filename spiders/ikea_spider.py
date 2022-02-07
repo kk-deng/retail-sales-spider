@@ -9,7 +9,7 @@ Created on 2022-01-16 17:06:12
 import random
 import time
 from datetime import datetime, time as tm
-# from typing import Dict, List, Set
+from typing import Dict, List, Set
 
 import feapder
 import telegram
@@ -19,7 +19,7 @@ from feapder.utils.log import log
 from tools import *
 # from utils.helpers import escape_markdown
 
-SCRAPE_COUNT = 1200
+SCRAPE_COUNT = 2000
 
 
 class IkeaSpider(feapder.AirSpider):
@@ -28,12 +28,13 @@ class IkeaSpider(feapder.AirSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.file_operator = file_input_output.FileReadWrite()
+        self.ikea_api = self.file_operator.ikea_api
         self.ikea_header = self.file_operator.get_spider_header('ikea')
         self.bot = telegram.Bot(token=self.file_operator.newbot_token)
         self.art_id_dict = {
             '10413528': 'HEMNES TV bench',
             '70339291': 'FJÄLLBO Shelf unit',
-            '70342199': 'FJÄLLBO Shelf unit Small',
+            '70342199': 'FJÄLLBO Shelf unit (S)',
             '60427293': 'KNOPPÄNG Frame W',
             '30387118': 'KNOPPÄNG Frame B',
             '20436713': 'BAGGEBO Bookcase',
@@ -55,7 +56,7 @@ class IkeaSpider(feapder.AirSpider):
         }
 
     @property
-    def id_url_str(self):
+    def id_url_str(self) -> str:
         art_str = ','.join([f'ART-{pid}' for pid in self.art_id_dict.keys()])
         spr_str = ','.join([f'SPR-{pid}' for pid in self.spr_id_dict.keys()])
 
@@ -73,20 +74,20 @@ class IkeaSpider(feapder.AirSpider):
             #     time.sleep(3)
 
             # Search multiple products in one IKEA store
-            url = f"https://shop.api.ingka.ikea.com/range/v3/ca/en/availability/store/{self.store_id}/{self.id_url_str}"
+            url = f"{self.ikea_api}/{self.store_id}/{self.id_url_str}"
             yield feapder.Request(url, method="GET")
 
             # Now time
             now = datetime.now().time()
 
             # Lower the speed at night
-            if tm(1,00) <= now <= tm(2,59):
+            if tm(0,00) <= now <= tm(2,59):
                 time_gap = random.randrange(180, 300)
             elif tm(3,00) <= now <= tm(7,00):
                 log.info('Task paused...')
                 time_gap = 4*60*60
             else:
-                time_gap = random.randrange(50, 70)
+                time_gap = random.randrange(100, 150)
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## IKEA running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -95,7 +96,7 @@ class IkeaSpider(feapder.AirSpider):
             if i % 2 == 0:
                 log.info(self.log_msg)
 
-    def download_midware(self, request):
+    def download_midware(self, request) -> feapder.Request:
         request.headers = self.ikea_header
         return request
 
@@ -155,10 +156,8 @@ class IkeaSpider(feapder.AirSpider):
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
-        
-        # print(response.json)
 
-    def overwrite_products_dict(self, ikea_product):
+    def overwrite_products_dict(self, ikea_product: IkeaProduct):
         staged_product = self.products_dict[ikea_product.product_id]
         staged_product['store_id'] = ikea_product.store_id
         staged_product['sale_point'] = ikea_product.sale_point
@@ -206,12 +205,12 @@ class IkeaProduct:
         self.store_name = self.store_list.get(self.store_id, "Other")
         self.locations = ikea_product.get('locations')
     
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__class__) + '\n' + \
             '\n'.join((str(item) + ' = ' + str(self.__dict__[item]) for item in sorted(self.__dict__)))
 
     @property
-    def stock_num(self):
+    def stock_num(self) -> int:
         if self.status_code in ['HIGH_IN_STOCK', 'LOW_IN_STOCK']:
             stock_des = self.status.get('description', '<b>0</b>')
             stock_num = stock_des.split('<b>')[1].split('</b>')[0]
@@ -220,21 +219,21 @@ class IkeaProduct:
             return 0
 
     @property
-    def items(self): 
+    def items(self) -> List[Dict]: 
         try:
             return self.locations[0]['items']
         except:
             return []
     
     @property
-    def title(self):
+    def title(self) -> str:
         try:
             return self.items[0]['title']
         except:
             return 'Unknown'
     
     @property
-    def restock_date(self):
+    def restock_date(self) -> str or None:
         description = self.status.get('description')
         if 'Estimated' in description:
             # Extract date from "Estimated back in stock: <b>2022-01-21</b>"
