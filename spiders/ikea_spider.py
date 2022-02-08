@@ -6,6 +6,7 @@ Created on 2022-01-16 17:06:12
 ---------
 @author: Kelvin
 """
+from __future__ import annotations
 import random
 import time
 from datetime import datetime, time as tm
@@ -131,10 +132,7 @@ class IkeaSpider(feapder.AirSpider):
                 if yield_conditions[1]:
                     msg_stock_num = f'{saved_product.get("stock_num", 0)} -> {ikea_product.stock_num}'
                 else:
-                    if ikea_product.restock_date:
-                        msg_stock_num = ikea_product.restock_date
-                    else:
-                        msg_stock_num = ikea_product.stock_num
+                    msg_stock_num = self.resolve_stock_num(ikea_product)
 
                 msg_content = (
                     f'*Name*: _{saved_product["title"]}_ (*{ikea_product.product_id}*)\n'
@@ -146,10 +144,7 @@ class IkeaSpider(feapder.AirSpider):
 
                 self.overwrite_products_dict(ikea_product)
             
-            if ikea_product.restock_date:
-                log_stock_num = ikea_product.restock_date
-            else:
-                log_stock_num = ikea_product.stock_num
+            log_stock_num = self.resolve_stock_num(ikea_product)
 
             # Example: {10413528: 'HIGH_IN_STOCK(14)'}
             out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({log_stock_num})'
@@ -168,6 +163,12 @@ class IkeaSpider(feapder.AirSpider):
         if ikea_product.restock_date:
             staged_product['restock_date'] = ikea_product.restock_date
     
+    def resolve_stock_num(self, ikea_product: IkeaProduct) -> str:
+        if ikea_product.restock_date:
+            return ikea_product.restock_date
+        else:
+            return ikea_product.stock_num
+
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
         log.info(f'## Sending: {log_content}')
