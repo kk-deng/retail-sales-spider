@@ -1,12 +1,17 @@
 # Bestbuy & RFD Deals Spider
 
-A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website and send telegram messages when stocks of products change. 
+A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website and send telegram messages when stocks of products change. All scraped data will be loaded in real-time to an online cloud database MongoDB Atlas or a local Database with MongoDB Compass for future sales analysis.
+
+*Note: Walmart.ca removed the stock number of products in Dec 2021, so it is not considered for the future support.*
 
 It can also web scrape trending deals from **Redflagdeals** forum and alert users through telegram bot channels.
 
 For all new scraped items/products, this spider will create a NoSQL connection to a cloud database service, e.g. MongoDB Atlas.
 
-## Modules
+## Featured Modules
+Each spider class scrapes data for one website/app.
+They can be triggered and run asynchronously in the main.py.
+Module logics can be found in the `def parse(self, request, response)` method in each class.
 
 * [Bestbuy Spider Class][https://github.com/kk-deng/retail-sales-spider/blob/main/spiders/bestbuy_spider.py]
 * [IKEA.ca Spider Class][https://github.com/kk-deng/retail-sales-spider/blob/main/spiders/ikea_spider.py]
