@@ -10,23 +10,23 @@ class FileReadWrite:
         self.settings_path = r'resources\settings.json'
         self.deal_csv_path = r'resources\deal.csv'
         self.watchlist_csv_path = r'resources\watchlist.csv'
-        self.rfd_api = self.__import_keys['rfd_api']
-        self.rfd_api_params = self.__import_keys['rfd_api_params']
-        self.ikea_api = self.__import_keys['ikea_api']
-        self.token = self.__import_keys['token']
-        self.newbot_token = self.__import_keys['newbot_token']
-        self.chat_id = self.__import_keys['chat_id']
-        self.channel_id = self.__import_keys['channel_id']
-        self.MONGO_IP = self.__import_keys["MONGO_IP"]
-        self.MONGO_DB = self.__import_keys["MONGO_DB"]
-        self.MONGO_USER_NAME = self.__import_keys["MONGO_USER_NAME"]
-        self.MONGO_USER_PASS = self.__import_keys["MONGO_USER_PASS"]
-        self.mongodb_url = self.__import_keys['mongodb_url']
-        self.bby_cookies = self.__import_keys['bby_cookies']
+        self.rfd_api = self._import_keys.get('rfd_api')
+        self.rfd_api_params = self._import_keys.get('rfd_api_params')
+        self.ikea_api = self._import_keys.get('ikea_api')
+        self.token = self._import_keys.get('token')
+        self.newbot_token = self._import_keys.get('newbot_token')
+        self.chat_id = self._import_keys.get('chat_id')
+        self.channel_id = self._import_keys.get('channel_id')
+        self.MONGO_IP = self._import_keys.get("MONGO_IP")
+        self.MONGO_DB = self._import_keys.get("MONGO_DB")
+        self.MONGO_USER_NAME = self._import_keys.get("MONGO_USER_NAME")
+        self.MONGO_USER_PASS = self._import_keys.get("MONGO_USER_PASS")
+        self.mongodb_url = self._import_keys.get('mongodb_url')
+        self.bby_cookies = self._import_keys.get('bby_cookies')
         # self.ua = UserAgent(verify_ssl=False)
     
     @property
-    def __import_keys(self):
+    def _import_keys(self):
         with open(self.settings_path) as s:
             return json.load(s)
 
