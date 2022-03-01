@@ -10,6 +10,7 @@ from __future__ import annotations
 import random
 import time
 from datetime import datetime, time as tm
+from functools import wraps
 from typing import Dict, List, Set
 
 import feapder
@@ -169,9 +170,22 @@ class IkeaSpider(feapder.AirSpider):
         else:
             return ikea_product.stock_num
 
+    def send_action(action):
+        """Sends `action` while processing func command."""
+
+        def decorator(func):
+            @wraps(func)
+            def command_func(self, *args, **kwargs):
+                self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
+                return func(self,  *args, **kwargs)
+            return command_func
+        
+        return decorator
+
+    @send_action(telegram.ChatAction.TYPING)
     def send_bot_msg(self, content_msg: str) -> bool:
         log_content = content_msg.replace("\n", "")
-        log.info(f'## Sending: {log_content}')
+        log.warning(f'## Sending: {log_content}')
         
         try:
             self.bot.send_message(
