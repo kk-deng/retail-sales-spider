@@ -1,8 +1,10 @@
 # Bestbuy & RFD Deals Spider
 
-A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website and send telegram messages when stocks of products change. 
+A web-scraping project based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website, and it can send telegram messages when stocks of products change as per pre-set conditions.
 
-It can also web scrape trending deals from **Redflagdeals** forum and alert users through telegram bot channels.
+It can also web scrape trending deals from **Redflagdeals** forum and alert users through telegram bot channels with multiple conditions, including trending index (e.g. upvotes per minute), keywords list (csv file input), and overall upvotes, etc.
+
+Scraping behaviours can be customized by setting random time gaps, dynamic scraping frequency, and targeted products.
 
 For all new scraped items/products, this spider will create a NoSQL connection to a cloud database service, e.g. MongoDB Atlas.
 
