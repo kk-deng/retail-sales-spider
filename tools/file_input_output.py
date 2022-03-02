@@ -86,9 +86,9 @@ class FileReadWrite:
 
     def get_spider_header(self, website: str) -> dict:
         with open('resources/user_agent.json') as s:
-            ua_list = json.load(s)
+            ua_loaded_file = json.load(s)
             # Get a random index within the json list length
-            random_ua = random.choice(ua_list)['useragent']
+            random_ua = random.choice(ua_loaded_file)['useragent']
             ua_list = {
                 "rfd": {
                     "Host": "forums.redflagdeals.com",
@@ -134,4 +134,5 @@ class FileReadWrite:
                     "Accept-Encoding": "gzip, deflate, br"
                 }
             }
+            
         return ua_list[website]
