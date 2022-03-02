@@ -45,13 +45,15 @@ class IkeaSpider(feapder.AirSpider):
         self.spr_id_dict = {
             '99291745': 'HYLLIS shelving unit',
         }
-        self.products_dict = {}
+        self.products_dict = self.initialized_products_dict
         self.log_msg = ''
     
-    def initialized_products_dict(self):
+    @property
+    def initialized_products_dict(self) -> dict:
         art_id_dict_copy = self.art_id_dict.copy()
         art_id_dict_copy.update(self.spr_id_dict)
-        self.products_dict = {
+
+        return {
             product_id: {'title': name}
             for product_id, name in
             art_id_dict_copy.items()
@@ -65,7 +67,6 @@ class IkeaSpider(feapder.AirSpider):
         return art_str + ',' + spr_str
 
     def start_requests(self):
-        self.initialized_products_dict()
 
         for i in range(1, SCRAPE_COUNT):
             
@@ -112,7 +113,7 @@ class IkeaSpider(feapder.AirSpider):
 
             if len(self.products_dict[ikea_product.product_id]) == 1:
                 # If return None, initialize the dict
-                self.overwrite_products_dict(ikea_product)
+                self.overwrite_products_dict(ikea_product, None)
             
             saved_product = self.products_dict[ikea_product.product_id]
 
@@ -141,9 +142,14 @@ class IkeaSpider(feapder.AirSpider):
                     f'*Quantity*: *{msg_stock_num}*'
                 )
 
-                self.send_bot_msg(msg_content)
+                reply_to_msg_id = saved_product.get('previous_msg_id')
 
-                self.overwrite_products_dict(ikea_product)
+                # If msg sent successfully, return telegram msg id
+                returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
+
+                returned_msg_id = returned_msg.get('message_id')
+
+                self.overwrite_products_dict(ikea_product, returned_msg_id)
             
             log_stock_num = self.resolve_stock_num(ikea_product)
 
@@ -153,16 +159,20 @@ class IkeaSpider(feapder.AirSpider):
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
 
-    def overwrite_products_dict(self, ikea_product: IkeaProduct):
+    def overwrite_products_dict(self, ikea_product: IkeaProduct, returned_msg_id: str) -> None:
         staged_product = self.products_dict[ikea_product.product_id]
         staged_product['store_id'] = ikea_product.store_id
         staged_product['sale_point'] = ikea_product.sale_point
         staged_product['status_code'] = ikea_product.status_code
         staged_product['stock_num'] = ikea_product.stock_num
         staged_product['store_name'] = ikea_product.store_name
-            
+        
         if ikea_product.restock_date:
             staged_product['restock_date'] = ikea_product.restock_date
+        
+        # If the sent msg id is not None, record it into the product dict
+        if returned_msg_id:
+            staged_product['previous_msg_id'] = returned_msg_id
     
     def resolve_stock_num(self, ikea_product: IkeaProduct) -> str:
         if ikea_product.restock_date:
@@ -183,20 +193,21 @@ class IkeaSpider(feapder.AirSpider):
         return decorator
 
     @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str) -> bool:
+    def send_bot_msg(self, content_msg: str, reply_to_msg_id: str) -> str or bool:
         log_content = content_msg.replace("\n", "")
         log.warning(f'## Sending: {log_content}')
         
         try:
-            self.bot.send_message(
+            returned_msg = self.bot.send_message(
                 text=content_msg, 
                 chat_id=self.file_operator.chat_id,
+                reply_to_message_id=reply_to_msg_id,
                 # reply_markup=reply_markup,
                 parse_mode=telegram.ParseMode.MARKDOWN
                 )
             log.info('## Msg was sent successfully!')
             time.sleep(3)
-            return True
+            return returned_msg
         except Exception as e:
             log.info(f'## Msg failed sending with error:\n{e}')
             return False
