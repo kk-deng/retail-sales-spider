@@ -147,7 +147,7 @@ class IkeaSpider(feapder.AirSpider):
                 # If msg sent successfully, return telegram msg id
                 returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
 
-                returned_msg_id = returned_msg.get('message_id')
+                returned_msg_id = returned_msg['message_id']
 
                 self.overwrite_products_dict(ikea_product, returned_msg_id)
             
