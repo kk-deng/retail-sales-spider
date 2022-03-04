@@ -23,6 +23,7 @@ class RfdTopicItem(UpdateItem):
         "total_views",
         "elapsed_mins",
         "msg_sent_cnt",
+        "last_post_time",
     ] # Update certain keys
 
     def __init__(self, *args, **kwargs):
