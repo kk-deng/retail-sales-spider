@@ -16,11 +16,11 @@ import feapder
 import telegram
 from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
-from items import *
+from items import rfd_item
 from tools import *
 from utils.helpers import escape_markdown
 
-SCRAPE_COUNT = 1000
+SCRAPE_COUNT = 2000
 BB_SHIPPING_CHECK = True
 BB_PICKUP_CHECK = False
 
@@ -77,7 +77,7 @@ class RfdSpider(feapder.AirSpider):
 
             record_conditions = [
                 (topic.elapsed_mins <= 180), 
-                (topic.elapsed_mins <= 300 and topic.upvotes >= 30)
+                (topic.elapsed_mins <= 300 and topic.upvotes >= 20)
             ]
 
             if any(record_conditions):
@@ -95,12 +95,13 @@ class RfdSpider(feapder.AirSpider):
                 # matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 # Collect the msg sending conditions, any of them is True
+                # TODO: 1st condition is for final upvotes, 2nd is for up only
                 sendmsg_conditions_1 = [
-                    (topic.upvotes >= 8), 
+                    (topic.upvotes >= 4), 
                     topic.matched_keywords,
-                    (topic.upvotes/topic.elapsed_mins >= 0.4)
+                    (topic.total_up/topic.elapsed_mins >= 0.4)
                 ]
-                sendmsg_conditions_2 = [(topic.upvotes >= 20),]
+                sendmsg_conditions_2 = [(topic.upvotes >= 15),]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
