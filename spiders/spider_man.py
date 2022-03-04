@@ -67,14 +67,25 @@ class RfdSpider(feapder.AirSpider):
             raise Exception("Response code not 200")
     
     def parse(self, request, response):
+        """Main function to parse response, trigger alert and yield to update database items.
+
+        Args:
+            request: API request sent by start_requests
+            response: Json file returned by the API request
+
+        Yields:
+            feapder.UpdateItem: Buffered items to be sent to database
+        """
         # Read watchlist for keywords watching
         watch_list = self.file_operator.watchlist_csv
 
         topic_list = response.json['topics']
 
+        # For each topic from the API response
         for thread in topic_list:
             topic = RfdTopic(thread, watch_list)
 
+            # Only topics with the record_conditions will be checked, e.g. recent or high votes topics
             record_conditions = [
                 (topic.elapsed_mins <= 180), 
                 (topic.elapsed_mins <= 300 and topic.upvotes >= 20)
@@ -89,10 +100,6 @@ class RfdSpider(feapder.AirSpider):
                 except:
                     self.log_new_topic(topic)
                     msg_sent_counter = 0
-            
-                # Parse retailer name and deal title, compared with watch_list and return list of boolean
-                # boolean_watchlist = self.match_watchlist(topic.dealer_name, topic.topic_title, watch_list)
-                # matched_keywords = self.matched_keywords(boolean_watchlist, watch_list)
 
                 # Collect the msg sending conditions, any of them is True
                 # TODO: 1st condition is for final upvotes, 2nd is for up only
@@ -124,9 +131,15 @@ class RfdSpider(feapder.AirSpider):
                 item.msg_sent_cnt = msg_sent_counter
                 yield item
     
-    def send_text_msg(self, topic, **kwargs):
-        # watchlist_str = kwargs.get('watchlist', '*Hot*')
+    def send_text_msg(self, topic: RfdTopic, **kwargs) -> telegram.Message or False:
+        """Compose telegram messages from topic and return the msg_id from sent messages.
 
+        Args:
+            topic (RfdTopic): An object of each topic 
+
+        Returns:
+            telegram.Message or False: A Message object returned from send_bot_msg
+        """
         # Get strings from item_dict
         elapsed_mins = topic.elapsed_mins
         upvotes = topic.upvotes
@@ -151,7 +164,7 @@ class RfdSpider(feapder.AirSpider):
         msg_content = (
             f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
             f'👍*Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            f'📕*Title*: _({dealer_name.strip("[]")})_ {(topic_title)} \n'
+            f'📕*Title*: _({dealer_name.strip("[]")})_ {(escape_markdown(topic_title))} \n'
             f'🔗*Link*: {topic_link}'
         )
         
@@ -170,7 +183,16 @@ class RfdSpider(feapder.AirSpider):
         return decorator
 
     @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, offer_url: str = None) -> bool:
+    def send_bot_msg(self, content_msg: str, offer_url: str = None) -> telegram.Message or False:
+        """Take content_msg and send it through telegram bot, return msg_id or False
+
+        Args:
+            content_msg (str): _description_
+            offer_url (str, optional): _description_. Defaults to None.
+
+        Returns:
+            telegram.Message or False: Return Message object of sent msg or False
+        """
         log_content = content_msg.replace("\n", "")
         log.warning(f'## Sending: {log_content}')
 
