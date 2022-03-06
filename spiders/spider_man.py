@@ -6,6 +6,7 @@ Created on 2021-11-29 16:06:12
 ---------
 @author: Kelvin
 """
+from __future__ import annotations
 import random
 import time
 from datetime import datetime, timezone, time as tm
@@ -143,6 +144,7 @@ class RfdSpider(feapder.AirSpider):
         # Get strings from item_dict
         elapsed_mins = topic.elapsed_mins
         upvotes = topic.upvotes
+        total_up = topic.total_up
         upvotes_per_min = upvotes/elapsed_mins
         topic_title = topic.topic_title
         topic_link = topic.topic_title_link
@@ -150,11 +152,12 @@ class RfdSpider(feapder.AirSpider):
         offer_url = topic.offer_url
         matched_keywords = topic.matched_keywords
 
-        if upvotes >= 8:
-            hot_emoji = '🔥' * round(upvotes / 8)
+        # Use up votes only, not final votes
+        if total_up >= 8:
+            hot_emoji = '🔥' * round(total_up / 8)
             msg_header = f"{hot_emoji}*Hot Deal*:"
         else:
-            if upvotes_per_min >= 0.4 and upvotes >= 2:
+            if upvotes_per_min >= 0.4 and total_up >= 2:
                 msg_header = "🚀*Trending Deal*:"
             else:
                 msg_header = "🆕*New Deal*:"
@@ -163,7 +166,7 @@ class RfdSpider(feapder.AirSpider):
         
         msg_content = (
             f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'👍*Votes*: *{upvotes}* votes (↑{topic.total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            f'👍*Votes*: *{upvotes}* votes (↑{total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
             f'📕*Title*: _({dealer_name.strip("[]")})_ {(escape_markdown(topic_title))} \n'
             f'🔗*Link*: {topic_link}'
         )
