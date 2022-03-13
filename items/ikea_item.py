@@ -13,5 +13,13 @@ from feapder import UpdateItem
 class IkeaStockItem(UpdateItem):
     """Ikea stock information for database storage, e.g. MongoDB"""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, ikea_product, *args, **kwargs):
+        self.product_id = ikea_product.product_id
+        self.product_type = ikea_product.product_type
+        self.stock_num = ikea_product.stock_num
+        self.store_id = ikea_product.store_id
+        self.sale_point = ikea_product.sale_point
+        self.status = ikea_product.status
+        self.status_code = ikea_product.status_code
+        self.store_name = ikea_product.store_name
+        self.locations = ikea_product.locations
