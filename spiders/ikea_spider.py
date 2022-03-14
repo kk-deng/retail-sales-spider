@@ -237,7 +237,7 @@ class IkeaProduct:
 
     @property
     def stock_num(self) -> int:
-        if self.status_code in ['HIGH_IN_STOCK', 'LOW_IN_STOCK']:
+        if self.status_code != 'OUT_OF_STOCK':
             stock_des = self.status.get('description', '<b>0</b>')
             stock_num = stock_des.split('<b>')[1].split('</b>')[0]
             return int(stock_num)
