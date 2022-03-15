@@ -17,7 +17,7 @@ import feapder
 import telegram
 # from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
-# from items import *
+from items import ikea_item
 from tools import *
 # from utils.helpers import escape_markdown
 
@@ -111,9 +111,17 @@ class IkeaSpider(feapder.AirSpider):
         for product in ikea_products:
             ikea_product = IkeaProduct(product)
 
+            # Create items to be uploaded
+            upload_item = ikea_item.IkeaStockItem(
+                ikea_product, 
+                ref_dict=self.initialized_products_dict
+            )
+
             if len(self.products_dict[ikea_product.product_id]) == 1:
                 # If return None, initialize the dict
                 self.overwrite_products_dict(ikea_product, None)
+                # Add the first entry to database
+                yield upload_item
             
             saved_product = self.products_dict[ikea_product.product_id]
 
@@ -150,6 +158,9 @@ class IkeaSpider(feapder.AirSpider):
                 returned_msg_id = returned_msg['message_id']
 
                 self.overwrite_products_dict(ikea_product, returned_msg_id)
+
+                # Update items when stock changes
+                yield upload_item
             
             log_stock_num = self.resolve_stock_num(ikea_product)
 
@@ -230,6 +241,7 @@ class IkeaProduct:
         self.status_code = self.status.get('code')
         self.store_name = self.store_list.get(self.store_id, "Other")
         self.locations = ikea_product.get('locations')
+        self.timestamp = datetime.now()
     
     def __str__(self) -> str:
         return str(self.__class__) + '\n' + \
