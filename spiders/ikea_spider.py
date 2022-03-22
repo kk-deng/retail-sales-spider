@@ -20,6 +20,8 @@ from feapder.utils.log import log
 from items import ikea_item
 from tools import *
 # from utils.helpers import escape_markdown
+from utils.tg_bot import TelegramBot
+
 
 SCRAPE_COUNT = 2000
 
@@ -32,7 +34,9 @@ class IkeaSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.ikea_api = self.file_operator.ikea_api
         self.ikea_header = self.file_operator.get_spider_header('ikea')
-        self.bot = telegram.Bot(token=self.file_operator.newbot_token)
+        self.newbot_token = self.file_operator.newbot_token
+        self.chat_id = self.file_operator.chat_id
+        self.bot = TelegramBot(token=self.newbot_token, chat_id=self.chat_id)
         self.art_id_dict = {
             '10413528': 'HEMNES TV bench',
             '70339291': 'FJÄLLBO Shelf unit',
@@ -43,7 +47,7 @@ class IkeaSpider(feapder.AirSpider):
             '10287049': 'STRELITZIA Potted plant',
         }
         self.spr_id_dict = {
-            '99291745': 'HYLLIS shelving unit',
+            # '99291745': 'HYLLIS shelving unit',
         }
         self.products_dict = self.initialized_products_dict
         self.log_msg = ''
@@ -153,7 +157,8 @@ class IkeaSpider(feapder.AirSpider):
                 reply_to_msg_id = saved_product.get('previous_msg_id')
 
                 # If msg sent successfully, return telegram msg id
-                returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
+                returned_msg = self.bot.send_bot_msg(msg_content, reply_to_msg_id)
+                # returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
 
                 returned_msg_id = returned_msg['message_id']
 
@@ -191,37 +196,37 @@ class IkeaSpider(feapder.AirSpider):
         else:
             return ikea_product.stock_num
 
-    def send_action(action):
-        """Sends `action` while processing func command."""
+    # def send_action(action):
+    #     """Sends `action` while processing func command."""
 
-        def decorator(func):
-            @wraps(func)
-            def command_func(self, *args, **kwargs):
-                self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
-                return func(self,  *args, **kwargs)
-            return command_func
+    #     def decorator(func):
+    #         @wraps(func)
+    #         def command_func(self, *args, **kwargs):
+    #             self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
+    #             return func(self,  *args, **kwargs)
+    #         return command_func
         
-        return decorator
+    #     return decorator
 
-    @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, reply_to_msg_id: str) -> str or bool:
-        log_content = content_msg.replace("\n", "")
-        log.warning(f'## Sending: {log_content}')
+    # @send_action(telegram.ChatAction.TYPING)
+    # def send_bot_msg(self, content_msg: str, reply_to_msg_id: str) -> str or bool:
+    #     log_content = content_msg.replace("\n", "")
+    #     log.warning(f'## Sending: {log_content}')
         
-        try:
-            returned_msg = self.bot.send_message(
-                text=content_msg, 
-                chat_id=self.file_operator.chat_id,
-                reply_to_message_id=reply_to_msg_id,
-                # reply_markup=reply_markup,
-                parse_mode=telegram.ParseMode.MARKDOWN
-                )
-            log.info('## Msg was sent successfully!')
-            time.sleep(3)
-            return returned_msg
-        except Exception as e:
-            log.info(f'## Msg failed sending with error:\n{e}')
-            return False
+    #     try:
+    #         returned_msg = self.bot.send_message(
+    #             text=content_msg, 
+    #             chat_id=self.file_operator.chat_id,
+    #             reply_to_message_id=reply_to_msg_id,
+    #             # reply_markup=reply_markup,
+    #             parse_mode=telegram.ParseMode.MARKDOWN
+    #             )
+    #         log.info('## Msg was sent successfully!')
+    #         time.sleep(3)
+    #         return returned_msg
+    #     except Exception as e:
+    #         log.info(f'## Msg failed sending with error:\n{e}')
+    #         return False
             
 
 class IkeaProduct:
@@ -249,9 +254,16 @@ class IkeaProduct:
 
     @property
     def stock_num(self) -> int:
-        if self.status_code != 'OUT_OF_STOCK':
-            stock_des = self.status.get('description', '<b>0</b>')
-            stock_num = stock_des.split('<b>')[1].split('</b>')[0]
+        """Get stock number of the product.
+        In case of product that is not sold in the store, the status will return:
+        # {'code': 'OTHER', 'htmlText': 'Not sold at Vaughan', 'label': 'Not sold at Vaughan', 'description': '', 'colour': '#929292', 'timestamp': ''}
+
+        Returns:
+            int: Number of the product available.
+        """
+        _description = self.status.get('description', '<b>0</b>')
+        if self.status_code != 'OUT_OF_STOCK' and len(_description) > 1:
+            stock_num = _description.split('<b>')[1].split('</b>')[0]
             return int(stock_num)
         else:
             return 0
