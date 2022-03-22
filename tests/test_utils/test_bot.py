@@ -18,4 +18,4 @@ def test_tgbot():
     test_msg = 'Testing'
     return_msg = tg_bot.send_bot_msg(content_msg=test_msg)
 
-    assert type(return_msg) is bool
+    assert type(return_msg['message_id']) is int
