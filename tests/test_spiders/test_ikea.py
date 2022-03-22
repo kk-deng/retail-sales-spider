@@ -4,7 +4,7 @@ from items.ikea_item import IkeaStockItem
 
 @pytest.mark.ikeaitem
 def test_ikeaproduct_cls(api_ikea_products_by_store):
-
+    # Create an IkeaProduct instance
     product = IkeaProduct(api_ikea_products_by_store)
 
     assert type(product.product_id) == str
@@ -29,8 +29,19 @@ def test_ikeaproduct_cls(api_ikea_products_by_store):
         assert len(product.items) > 0
         assert product.title != 'Unknown'
     
-    print(product)
-    assert type(product.__str__()) == str
+    assert ' = ' in product.__str__()
+
+    
+@pytest.mark.ikeaitem
+def test_ikea_spider_method(api_ikea_products_by_store):   
+    # Check get_product_log_str method
+    # Create an IkeaProduct instance
+    product = IkeaProduct(api_ikea_products_by_store)
+    
+    product_log_str = IkeaSpider().get_product_log_str(product)
+
+    assert ' - ' in product_log_str
+
 
 
 @pytest.mark.ikeaitem
