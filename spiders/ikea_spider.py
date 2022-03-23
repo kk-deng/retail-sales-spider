@@ -24,6 +24,9 @@ from utils.tg_bot import TelegramBot
 
 
 SCRAPE_COUNT = 2000
+NIGHT_START_TIME = (0,00)
+NIGHT_END_TIME = (2,59)
+MORNING_TIME = (7,00)
 
 
 class IkeaSpider(feapder.AirSpider):
@@ -99,17 +102,8 @@ class IkeaSpider(feapder.AirSpider):
             url = f"{self.ikea_api}/{self.store_id}/{self.id_url_str}"
             yield feapder.Request(url, method="GET")
 
-            # Now time
-            now = datetime.now().time()
-
-            # Lower the speed at night
-            if tm(0,00) <= now <= tm(2,59):
-                time_gap = random.randrange(180, 300)
-            elif tm(3,00) <= now <= tm(7,00):
-                log.info('Task paused...')
-                time_gap = 4*60*60
-            else:
-                time_gap = random.randrange(100, 150)
+            # Get wait time gap
+            time_gap = self.scrape_time_gap
 
             if SCRAPE_COUNT > 2:
                 log.info(f'## IKEA running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -198,6 +192,27 @@ class IkeaSpider(feapder.AirSpider):
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
+
+    @property
+    def scrape_time_gap(self) -> int:
+        """Get wait time gap provided by the current time.
+
+        Returns:
+            int: The seconds to be wait between API requests
+        """
+        # Now time
+        now = datetime.now().time()
+
+        # Lower the speed at night
+        if tm(*NIGHT_START_TIME) <= now <= tm(*NIGHT_END_TIME):
+            time_gap = random.randrange(180, 300)
+        elif tm(*NIGHT_END_TIME) < now <= tm(*MORNING_TIME):
+            log.info('Task paused...')
+            time_gap = 4*60*60
+        else:
+            time_gap = random.randrange(100, 150)
+        
+        return time_gap
 
     def overwrite_products_dict(self, ikea_product: IkeaProduct, returned_msg_id: str) -> None:
         """Update the products_dict with the latest stock information.
