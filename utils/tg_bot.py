@@ -68,3 +68,17 @@ class TelegramBot:
             log.warning(f'## Msg failed sending with error:\n{e}')
 
             raise Exception
+    
+    def pin_message(self, pin_message_id: int) -> bool:
+        """Pin a telegram message with a pin_message_id.
+
+        Args:
+            pin_message_id (int): The message id to be pinned
+
+        Returns:
+            bool: Return True if the message is pinned successfully
+        """
+        return self.bot.pin_chat_message(
+            chat_id=self.chat_id, 
+            message_id=pin_message_id
+        )
