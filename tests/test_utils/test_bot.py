@@ -19,3 +19,8 @@ def test_tgbot():
     return_msg = tg_bot.send_bot_msg(content_msg=test_msg)
 
     assert type(return_msg['message_id']) is int
+
+    # Assert the return value of pin_message should be True
+    returned_pin_bool = tg_bot.pin_message(pin_message_id=return_msg['message_id'])
+
+    assert returned_pin_bool
