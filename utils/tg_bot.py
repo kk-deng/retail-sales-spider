@@ -26,8 +26,9 @@ class TelegramBot:
     def send_bot_msg(
         self, 
         content_msg: str, 
-        reply_to_msg_id: str or None=None
-    ) -> telegram.Message or bool:
+        reply_to_msg_id: str or None=None,
+        markup_url: str=None,
+    ) -> telegram.Message:
         """Given a string msg and msg_id, send msg to telegram chat_id.
 
         Args:
@@ -35,17 +36,27 @@ class TelegramBot:
             reply_to_msg_id (str or None, optional): The msg_id to be quoted when sending msg. Defaults to None.
 
         Returns:
-            telegram.Message or bool: Return a Message class or False
+            telegram.Message: Return a Message object sent successfully
         """
         log_content = content_msg.replace("\n", "")
         log.warning(f'## Sending: {log_content}')
+
+        if markup_url:
+            keyboard = [
+                [
+                    telegram.InlineKeyboardButton("Open Direct Link", url=markup_url),
+                ],
+            ]
+            reply_markup = telegram.InlineKeyboardMarkup(keyboard)
+        else:
+            reply_markup = None
 
         try:
             returned_msg = self.bot.send_message(
                 text=content_msg, 
                 chat_id=self.chat_id,
                 reply_to_message_id=reply_to_msg_id,
-                # reply_markup=reply_markup,
+                reply_markup=reply_markup,
                 parse_mode=telegram.ParseMode.MARKDOWN
                 )
             
