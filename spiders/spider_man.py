@@ -238,27 +238,6 @@ class RfdSpider(feapder.AirSpider):
     def find_db_topic_by_id(self, topic_id) -> int:
         return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)[0]
 
-    @staticmethod
-    def match_watchlist(
-        topictitle_retailer: str, 
-        topic_title: str, 
-        watch_list: List[str]
-    ) -> List[bool]:
-        retailer_and_title = topictitle_retailer + ' ' + topic_title
-        true_watchlist = [keyword in retailer_and_title.lower() for keyword in watch_list]
-        return true_watchlist
-    
-    @staticmethod
-    def matched_keywords(
-        boolean_watchlist: List[bool], 
-        watch_list: List[str]
-    ) -> str:
-        if any(boolean_watchlist):
-            matches_list = [i for (i, v) in zip(watch_list, boolean_watchlist) if v]
-            return f'({"&".join(matches_list)}) '
-        else:
-            return ''
-
 
 class RfdTopic:
     def __init__(self, topic, watch_list: List[str]):
@@ -284,7 +263,6 @@ class RfdTopic:
         self.offer_savings = self.offer['savings']
         self.offer_expires_at = self.offer['expires_at']
         self.watch_list = watch_list
-        # self.matched_watchlist_ind = any(self.watchlist_bool())
     
     @staticmethod
     def utc_to_local(utc_dt: str) -> datetime:
