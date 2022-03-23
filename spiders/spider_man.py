@@ -24,6 +24,9 @@ from utils.helpers import escape_markdown
 from utils.tg_bot import TelegramBot
 
 SCRAPE_COUNT = 2000
+NIGHT_START_TIME = (1,00)
+NIGHT_END_TIME = (2,59)
+MORNING_TIME = (7,59)
 
 
 class RfdSpider(feapder.AirSpider):
@@ -58,12 +61,7 @@ class RfdSpider(feapder.AirSpider):
         for i in range(1, SCRAPE_COUNT):
             yield feapder.Request(self.rfd_api, params=self.rfd_api_params, method="GET")
 
-            # Lower the speed at night by checking the now time
-            # TODO: Move it to a method
-            if tm(1,00) <= datetime.now().time() <= tm(7,59):
-                time_gap = random.randrange(180, 300)
-            else:
-                time_gap = random.randrange(50, 70)
+            time_gap = self.scrape_time_gap
             
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
@@ -135,6 +133,24 @@ class RfdSpider(feapder.AirSpider):
                 item.msg_sent_cnt = msg_sent_counter
                 yield item
     
+    @property
+    def scrape_time_gap(self) -> int:
+        """Get wait time gap provided by the current time.
+
+        Returns:
+            int: The seconds to be wait between API requests
+        """
+        # Now time
+        now = datetime.now().time()
+
+        # Lower the speed at night
+        if tm(*NIGHT_START_TIME) <= now <= tm(*MORNING_TIME):
+            time_gap = random.randrange(180, 300)
+        else:
+            time_gap = random.randrange(50, 70)
+        
+        return time_gap
+
     def send_text_msg(self, topic: RfdTopic, **kwargs) -> telegram.Message or False:
         """Compose telegram messages from topic and return the msg_id from sent messages.
 
@@ -175,56 +191,6 @@ class RfdSpider(feapder.AirSpider):
         )
         
         return self.bot.send_bot_msg(content_msg=msg_content, markup_url=offer_url)
-    
-    # def send_action(action):
-    #     """Sends `action` while processing func command."""
-
-    #     def decorator(func):
-    #         @wraps(func)
-    #         def command_func(self, *args, **kwargs):
-    #             self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
-    #             return func(self,  *args, **kwargs)
-    #         return command_func
-        
-    #     return decorator
-
-    # @send_action(telegram.ChatAction.TYPING)
-    # def send_bot_msg(self, content_msg: str, offer_url: str = None) -> telegram.Message or False:
-    #     """Take content_msg and send it through telegram bot, return msg_id or False
-
-    #     Args:
-    #         content_msg (str): _description_
-    #         offer_url (str, optional): _description_. Defaults to None.
-
-    #     Returns:
-    #         telegram.Message or False: Return Message object of sent msg or False
-    #     """
-    #     log_content = content_msg.replace("\n", "")
-    #     log.warning(f'## Sending: {log_content}')
-
-    #     if offer_url:
-    #         keyboard = [
-    #             [
-    #                 telegram.InlineKeyboardButton("Open Direct Link", url=offer_url),
-    #             ],
-    #         ]
-    #         reply_markup = telegram.InlineKeyboardMarkup(keyboard)
-    #     else:
-    #         reply_markup = None
-        
-    #     try:
-    #         returned_msg = self.bot.send_message(
-    #             text=content_msg, 
-    #             chat_id=self.file_operator.channel_id,
-    #             reply_markup=reply_markup,
-    #             parse_mode=telegram.ParseMode.MARKDOWN
-    #             )
-    #         log.info('## Msg was sent successfully!')
-    #         time.sleep(3)
-    #         return returned_msg
-    #     except Exception as e:
-    #         log.info(f'## Msg failed sending with error:\n{e}')
-    #         return False
 
     @staticmethod
     def log_new_topic(topic):
