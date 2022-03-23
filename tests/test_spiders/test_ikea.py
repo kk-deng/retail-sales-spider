@@ -1,10 +1,11 @@
 import pytest
-from spiders import ikea_spider
+from spiders.ikea_spider import IkeaProduct, IkeaSpider
+from items.ikea_item import IkeaStockItem
 
 @pytest.mark.ikeaitem
-def test_ikea_item_cls(api_ikea_products_by_store):
-
-    product = ikea_spider.IkeaProduct(api_ikea_products_by_store)
+def test_ikeaproduct_cls(api_ikea_products_by_store):
+    # Create an IkeaProduct instance
+    product = IkeaProduct(api_ikea_products_by_store)
 
     assert type(product.product_id) == str
     assert len(product.product_id) == 8
@@ -28,16 +29,39 @@ def test_ikea_item_cls(api_ikea_products_by_store):
         assert len(product.items) > 0
         assert product.title != 'Unknown'
     
-    print(product)
-    assert type(product.__str__()) == str
+    assert ' = ' in product.__str__()
 
-    # if product.restock_date:
-    assert product.restock_date.split('-')[0] == '2022'
+    
+@pytest.mark.ikeaitem
+def test_ikea_spider_method(api_ikea_products_by_store):   
+    # Check get_product_log_str method
+    # Create an IkeaProduct instance
+    product = IkeaProduct(api_ikea_products_by_store)
+    
+    product_log_str = IkeaSpider().get_product_log_str(product)
+
+    assert ' - ' in product_log_str
+
 
 
 @pytest.mark.ikeaitem
-def test_ikea_item_spider():
-    spider = ikea_spider.IkeaSpider()
-    # assert '10413528' in spider.products_dict
-    assert type(spider.id_url_str) == str
-    assert type(spider.id_url_str) == str
+def test_ikea_item_cls(api_ikea_products_by_store):
+    products_dict = IkeaSpider().products_dict
+
+    assert type(products_dict) == dict
+
+    # # Create a IkeaProduct class to pass to uploadItem class
+    # product = IkeaProduct(api_ikea_products_by_store)
+
+    # # Create an UploadItem instance
+    # item = IkeaStockItem(product, ref_dict=products_dict)
+
+    # assert item.product_id == api_ikea_products_by_store.product_id
+
+
+# @pytest.mark.ikeaitem
+# def test_ikea_item_spider():
+#     spider = IkeaSpider()
+#     # assert '10413528' in spider.products_dict
+#     assert type(spider.id_url_str) == str
+#     assert type(spider.id_url_str) == str

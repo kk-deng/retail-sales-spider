@@ -17,9 +17,11 @@ import feapder
 import telegram
 # from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
-# from items import *
+from items import ikea_item
 from tools import *
 # from utils.helpers import escape_markdown
+from utils.tg_bot import TelegramBot
+
 
 SCRAPE_COUNT = 2000
 
@@ -32,7 +34,9 @@ class IkeaSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.ikea_api = self.file_operator.ikea_api
         self.ikea_header = self.file_operator.get_spider_header('ikea')
-        self.bot = telegram.Bot(token=self.file_operator.newbot_token)
+        self.newbot_token = self.file_operator.newbot_token
+        self.chat_id = self.file_operator.chat_id
+        self.bot = TelegramBot(token=self.newbot_token, chat_id=self.chat_id)
         self.art_id_dict = {
             '10413528': 'HEMNES TV bench',
             '70339291': 'FJÄLLBO Shelf unit',
@@ -43,7 +47,7 @@ class IkeaSpider(feapder.AirSpider):
             '10287049': 'STRELITZIA Potted plant',
         }
         self.spr_id_dict = {
-            '99291745': 'HYLLIS shelving unit',
+            # '99291745': 'HYLLIS shelving unit',
         }
         self.products_dict = self.initialized_products_dict
         self.log_msg = ''
@@ -111,9 +115,17 @@ class IkeaSpider(feapder.AirSpider):
         for product in ikea_products:
             ikea_product = IkeaProduct(product)
 
+            # Create items to be uploaded
+            upload_item = ikea_item.IkeaStockItem(
+                ikea_product, 
+                ref_dict=self.initialized_products_dict
+            )
+
             if len(self.products_dict[ikea_product.product_id]) == 1:
                 # If return None, initialize the dict
                 self.overwrite_products_dict(ikea_product, None)
+                # Add the first entry to database
+                yield upload_item
             
             saved_product = self.products_dict[ikea_product.product_id]
 
@@ -145,16 +157,18 @@ class IkeaSpider(feapder.AirSpider):
                 reply_to_msg_id = saved_product.get('previous_msg_id')
 
                 # If msg sent successfully, return telegram msg id
-                returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
+                returned_msg = self.bot.send_bot_msg(msg_content, reply_to_msg_id)
+                # returned_msg = self.send_bot_msg(msg_content, reply_to_msg_id)
 
                 returned_msg_id = returned_msg['message_id']
 
                 self.overwrite_products_dict(ikea_product, returned_msg_id)
-            
-            log_stock_num = self.resolve_stock_num(ikea_product)
 
+                # Update items when stock changes
+                yield upload_item
+            
             # Example: {10413528: 'HIGH_IN_STOCK(14)'}
-            out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({log_stock_num})'
+            out_of_stock_dict[ikea_product.product_id] = self.get_product_log_str(ikea_product)
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
@@ -173,44 +187,21 @@ class IkeaSpider(feapder.AirSpider):
         # If the sent msg id is not None, record it into the product dict
         if returned_msg_id:
             staged_product['previous_msg_id'] = returned_msg_id
-    
-    def resolve_stock_num(self, ikea_product: IkeaProduct) -> str:
+
+    def get_product_log_str(self, ikea_product: IkeaProduct) -> str:
+        # If product has a restock date rather than stock_num, use it instead
         if ikea_product.restock_date:
-            return ikea_product.restock_date
+            stock_num_restock_date = ikea_product.restock_date
         else:
-            return ikea_product.stock_num
-
-    def send_action(action):
-        """Sends `action` while processing func command."""
-
-        def decorator(func):
-            @wraps(func)
-            def command_func(self, *args, **kwargs):
-                self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
-                return func(self,  *args, **kwargs)
-            return command_func
+            stock_num_restock_date = ikea_product.stock_num
         
-        return decorator
-
-    @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, reply_to_msg_id: str) -> str or bool:
-        log_content = content_msg.replace("\n", "")
-        log.warning(f'## Sending: {log_content}')
-        
+        # Get saved product name for log msg
         try:
-            returned_msg = self.bot.send_message(
-                text=content_msg, 
-                chat_id=self.file_operator.chat_id,
-                reply_to_message_id=reply_to_msg_id,
-                # reply_markup=reply_markup,
-                parse_mode=telegram.ParseMode.MARKDOWN
-                )
-            log.info('## Msg was sent successfully!')
-            time.sleep(3)
-            return returned_msg
-        except Exception as e:
-            log.info(f'## Msg failed sending with error:\n{e}')
-            return False
+            saved_product_name = self.products_dict[ikea_product.product_id]['title']
+        except KeyError:
+            saved_product_name = 'Unknown'
+
+        return f'{saved_product_name} - {ikea_product.status_code}({stock_num_restock_date})'
             
 
 class IkeaProduct:
@@ -230,6 +221,7 @@ class IkeaProduct:
         self.status_code = self.status.get('code')
         self.store_name = self.store_list.get(self.store_id, "Other")
         self.locations = ikea_product.get('locations')
+        self.timestamp = datetime.now()
     
     def __str__(self) -> str:
         return str(self.__class__) + '\n' + \
@@ -237,9 +229,16 @@ class IkeaProduct:
 
     @property
     def stock_num(self) -> int:
-        if self.status_code in ['HIGH_IN_STOCK', 'LOW_IN_STOCK']:
-            stock_des = self.status.get('description', '<b>0</b>')
-            stock_num = stock_des.split('<b>')[1].split('</b>')[0]
+        """Get stock number of the product.
+        In case of product that is not sold in the store, the status will return:
+        # {'code': 'OTHER', 'htmlText': 'Not sold at Vaughan', 'label': 'Not sold at Vaughan', 'description': '', 'colour': '#929292', 'timestamp': ''}
+
+        Returns:
+            int: Number of the product available.
+        """
+        _description = self.status.get('description', '<b>0</b>')
+        if self.status_code != 'OUT_OF_STOCK' and len(_description) > 1:
+            stock_num = _description.split('<b>')[1].split('</b>')[0]
             return int(stock_num)
         else:
             return 0
