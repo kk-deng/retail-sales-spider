@@ -167,10 +167,8 @@ class IkeaSpider(feapder.AirSpider):
                 # Update items when stock changes
                 yield upload_item
             
-            log_stock_num = self.resolve_stock_num(ikea_product)
-
             # Example: {10413528: 'HIGH_IN_STOCK(14)'}
-            out_of_stock_dict[ikea_product.product_id] =  f'{saved_product["title"]} - {ikea_product.status_code}({log_stock_num})'
+            out_of_stock_dict[ikea_product.product_id] = self.get_product_log_str(ikea_product)
         
         values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
@@ -189,44 +187,21 @@ class IkeaSpider(feapder.AirSpider):
         # If the sent msg id is not None, record it into the product dict
         if returned_msg_id:
             staged_product['previous_msg_id'] = returned_msg_id
-    
-    def resolve_stock_num(self, ikea_product: IkeaProduct) -> str:
+
+    def get_product_log_str(self, ikea_product: IkeaProduct) -> str:
+        # If product has a restock date rather than stock_num, use it instead
         if ikea_product.restock_date:
-            return ikea_product.restock_date
+            stock_num_restock_date = ikea_product.restock_date
         else:
-            return ikea_product.stock_num
-
-    # def send_action(action):
-    #     """Sends `action` while processing func command."""
-
-    #     def decorator(func):
-    #         @wraps(func)
-    #         def command_func(self, *args, **kwargs):
-    #             self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
-    #             return func(self,  *args, **kwargs)
-    #         return command_func
+            stock_num_restock_date = ikea_product.stock_num
         
-    #     return decorator
+        # Get saved product name for log msg
+        try:
+            saved_product_name = self.products_dict[ikea_product.product_id]['title']
+        except KeyError:
+            saved_product_name = 'Unknown'
 
-    # @send_action(telegram.ChatAction.TYPING)
-    # def send_bot_msg(self, content_msg: str, reply_to_msg_id: str) -> str or bool:
-    #     log_content = content_msg.replace("\n", "")
-    #     log.warning(f'## Sending: {log_content}')
-        
-    #     try:
-    #         returned_msg = self.bot.send_message(
-    #             text=content_msg, 
-    #             chat_id=self.file_operator.chat_id,
-    #             reply_to_message_id=reply_to_msg_id,
-    #             # reply_markup=reply_markup,
-    #             parse_mode=telegram.ParseMode.MARKDOWN
-    #             )
-    #         log.info('## Msg was sent successfully!')
-    #         time.sleep(3)
-    #         return returned_msg
-    #     except Exception as e:
-    #         log.info(f'## Msg failed sending with error:\n{e}')
-    #         return False
+        return f'{saved_product_name} - {ikea_product.status_code}({stock_num_restock_date})'
             
 
 class IkeaProduct:
