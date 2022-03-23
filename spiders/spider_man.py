@@ -7,23 +7,23 @@ Created on 2021-11-29 16:06:12
 @author: Kelvin
 """
 from __future__ import annotations
+
 import random
 import time
 from datetime import datetime, timezone, time as tm
 from functools import wraps
-from typing import Dict, List, Set
+from typing import Dict, List
 
 import feapder
 import telegram
 from feapder.db.mongodb import MongoDB
 from feapder.utils.log import log
 from items import rfd_item
-from tools import *
+from tools import file_input_output
 from utils.helpers import escape_markdown
+from utils.tg_bot import TelegramBot
 
 SCRAPE_COUNT = 2000
-BB_SHIPPING_CHECK = True
-BB_PICKUP_CHECK = False
 
 
 class RfdSpider(feapder.AirSpider):
@@ -33,14 +33,16 @@ class RfdSpider(feapder.AirSpider):
         self.file_operator = file_input_output.FileReadWrite()
         self.rfd_api = self.file_operator.rfd_api
         self.rfd_api_params = self.file_operator.rfd_api_params
-        self.bot = telegram.Bot(token=self.file_operator.token)
+        self.tg_token = self.file_operator.token
+        self.chat_id = self.file_operator.channel_id
+        self.bot = TelegramBot(token=self.tg_token, chat_id=self.chat_id)
         self.rfd_header = self.file_operator.get_spider_header('rfd')
 
     def start_callback(self):
-        self.send_bot_msg('Bot started...')
+        self.bot.send_bot_msg('Bot started...')
     
-    # def end_callback(self):
-    #     self.send_bot_msg('Bot Stopped...')
+    def end_callback(self):
+        self.bot.send_bot_msg('Bot Stopped...')
 
     def download_midware(self, request):
         # Downloader middleware uses random header from file_input_output
@@ -48,10 +50,16 @@ class RfdSpider(feapder.AirSpider):
         return request
 
     def start_requests(self):
+        """Main method to yield API requests every min.
+
+        Yields:
+            feapder.Request: A feapder.Request object of API call and params
+        """
         for i in range(1, SCRAPE_COUNT):
             yield feapder.Request(self.rfd_api, params=self.rfd_api_params, method="GET")
 
             # Lower the speed at night by checking the now time
+            # TODO: Move it to a method
             if tm(1,00) <= datetime.now().time() <= tm(7,59):
                 time_gap = random.randrange(180, 300)
             else:
@@ -60,8 +68,6 @@ class RfdSpider(feapder.AirSpider):
             if SCRAPE_COUNT > 2:
                 log.info(f'## Running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
                 time.sleep(time_gap)
-        
-        self.send_bot_msg('Bot Stopped...')
 
     def validate(self, request, response):
         if response.status_code != 200:
@@ -121,10 +127,7 @@ class RfdSpider(feapder.AirSpider):
                         if any(sendmsg_conditions_2):
                             pin_message_id = returned_msg['message_id']
 
-                            self.bot.pin_chat_message(
-                                chat_id=self.file_operator.channel_id,
-                                message_id=pin_message_id
-                            )
+                            self.bot.pin_message(pin_message_id=pin_message_id)
 
                         msg_sent_counter += 1  # Record the sending count
                 
@@ -139,7 +142,7 @@ class RfdSpider(feapder.AirSpider):
             topic (RfdTopic): An object of each topic 
 
         Returns:
-            telegram.Message or False: A Message object returned from send_bot_msg
+            telegram.Message: A Message object returned from send_bot_msg
         """
         # Get strings from item_dict
         elapsed_mins = topic.elapsed_mins
@@ -171,57 +174,57 @@ class RfdSpider(feapder.AirSpider):
             f'🔗*Link*: {topic_link}'
         )
         
-        return self.send_bot_msg(msg_content, offer_url)
+        return self.bot.send_bot_msg(content_msg=msg_content, markup_url=offer_url)
     
-    def send_action(action):
-        """Sends `action` while processing func command."""
+    # def send_action(action):
+    #     """Sends `action` while processing func command."""
 
-        def decorator(func):
-            @wraps(func)
-            def command_func(self, *args, **kwargs):
-                self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
-                return func(self,  *args, **kwargs)
-            return command_func
+    #     def decorator(func):
+    #         @wraps(func)
+    #         def command_func(self, *args, **kwargs):
+    #             self.bot.send_chat_action(chat_id=self.file_operator.chat_id, action=action)
+    #             return func(self,  *args, **kwargs)
+    #         return command_func
         
-        return decorator
+    #     return decorator
 
-    @send_action(telegram.ChatAction.TYPING)
-    def send_bot_msg(self, content_msg: str, offer_url: str = None) -> telegram.Message or False:
-        """Take content_msg and send it through telegram bot, return msg_id or False
+    # @send_action(telegram.ChatAction.TYPING)
+    # def send_bot_msg(self, content_msg: str, offer_url: str = None) -> telegram.Message or False:
+    #     """Take content_msg and send it through telegram bot, return msg_id or False
 
-        Args:
-            content_msg (str): _description_
-            offer_url (str, optional): _description_. Defaults to None.
+    #     Args:
+    #         content_msg (str): _description_
+    #         offer_url (str, optional): _description_. Defaults to None.
 
-        Returns:
-            telegram.Message or False: Return Message object of sent msg or False
-        """
-        log_content = content_msg.replace("\n", "")
-        log.warning(f'## Sending: {log_content}')
+    #     Returns:
+    #         telegram.Message or False: Return Message object of sent msg or False
+    #     """
+    #     log_content = content_msg.replace("\n", "")
+    #     log.warning(f'## Sending: {log_content}')
 
-        if offer_url:
-            keyboard = [
-                [
-                    telegram.InlineKeyboardButton("Open Direct Link", url=offer_url),
-                ],
-            ]
-            reply_markup = telegram.InlineKeyboardMarkup(keyboard)
-        else:
-            reply_markup = None
+    #     if offer_url:
+    #         keyboard = [
+    #             [
+    #                 telegram.InlineKeyboardButton("Open Direct Link", url=offer_url),
+    #             ],
+    #         ]
+    #         reply_markup = telegram.InlineKeyboardMarkup(keyboard)
+    #     else:
+    #         reply_markup = None
         
-        try:
-            returned_msg = self.bot.send_message(
-                text=content_msg, 
-                chat_id=self.file_operator.channel_id,
-                reply_markup=reply_markup,
-                parse_mode=telegram.ParseMode.MARKDOWN
-                )
-            log.info('## Msg was sent successfully!')
-            time.sleep(3)
-            return returned_msg
-        except Exception as e:
-            log.info(f'## Msg failed sending with error:\n{e}')
-            return False
+    #     try:
+    #         returned_msg = self.bot.send_message(
+    #             text=content_msg, 
+    #             chat_id=self.file_operator.channel_id,
+    #             reply_markup=reply_markup,
+    #             parse_mode=telegram.ParseMode.MARKDOWN
+    #             )
+    #         log.info('## Msg was sent successfully!')
+    #         time.sleep(3)
+    #         return returned_msg
+    #     except Exception as e:
+    #         log.info(f'## Msg failed sending with error:\n{e}')
+    #         return False
 
     @staticmethod
     def log_new_topic(topic):
@@ -240,7 +243,7 @@ class RfdSpider(feapder.AirSpider):
 
 
 class RfdTopic:
-    def __init__(self, topic, watch_list: List[str]):
+    def __init__(self, topic, watch_list: List[str]=[]):
         self.topic_id = topic['topic_id']
         self.topic_title = topic['title']
         self.votes = topic['votes'] or {}
