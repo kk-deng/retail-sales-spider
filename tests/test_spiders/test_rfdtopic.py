@@ -1,5 +1,7 @@
 from datetime import datetime
-
+from spiders.spider_man import RfdSpider
+import telegram
+import pytest
 
 def test_votes(api_topic):
     assert type(api_topic.upvotes) is int
@@ -27,3 +29,9 @@ def test_offer(api_topic):
 def test_matched_keywords(api_topic):
     assert any(api_topic.watchlist_bool) == True
     assert api_topic.matched_keywords == 'fido'
+
+@pytest.mark.rfd
+def test_rfd_spider_send_text_msg(api_topic):
+    spider = RfdSpider()
+
+    assert type(spider.send_text_msg(api_topic)) is telegram.Message
