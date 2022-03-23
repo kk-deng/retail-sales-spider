@@ -54,6 +54,11 @@ class IkeaSpider(feapder.AirSpider):
     
     @property
     def initialized_products_dict(self) -> dict:
+        """Generate the product list by combining ART and SPR products.
+
+        Returns:
+            dict: A dict contains product_id as key, and a dict of data as value
+        """
         art_id_dict_copy = self.art_id_dict.copy()
         art_id_dict_copy.update(self.spr_id_dict)
 
@@ -65,13 +70,23 @@ class IkeaSpider(feapder.AirSpider):
 
     @property
     def id_url_str(self) -> str:
+        """Create a long string with all desired products for URL parameters.
+
+        Returns:
+            str: For URL request, example: ART-10413528,ART-70339291,SPR-99291745
+        """
         art_str = ','.join([f'ART-{pid}' for pid in self.art_id_dict.keys()])
         spr_str = ','.join([f'SPR-{pid}' for pid in self.spr_id_dict.keys()])
 
         return art_str + ',' + spr_str
 
     def start_requests(self):
+        """Main method to yield requests by calling the API.
+        The request frequency will be reduced at night time.
 
+        Yields:
+            feapder.Request: Request object with API URL
+        """
         for i in range(1, SCRAPE_COUNT):
             
             # Search one product in different IKEA stores
@@ -108,6 +123,17 @@ class IkeaSpider(feapder.AirSpider):
         return request
 
     def parse(self, request, response):
+        """Main parser method which process the responses.
+        If the preset conditions are met, send telegram messages.
+        Load data to MongoDB Atlas when the stock status/number is changed.
+
+        Args:
+            request (feapder.Request): Request object of feapder
+            response (feapder.Response): Response object of feapder
+
+        Yields:
+            ikea_item.IkeaStockItem: To load data to MongoDB Atlas
+        """
         ikea_products = response.json
 
         out_of_stock_dict = {}
@@ -174,6 +200,12 @@ class IkeaSpider(feapder.AirSpider):
         self.log_msg = 'IKEA Stock: ' + ', '.join(values)
 
     def overwrite_products_dict(self, ikea_product: IkeaProduct, returned_msg_id: str) -> None:
+        """Update the products_dict with the latest stock information.
+
+        Args:
+            ikea_product (IkeaProduct): An IkeaProduct object of each product from the API response
+            returned_msg_id (str): The last Telegram Message ID used to quote the message
+        """
         staged_product = self.products_dict[ikea_product.product_id]
         staged_product['store_id'] = ikea_product.store_id
         staged_product['sale_point'] = ikea_product.sale_point
@@ -189,6 +221,14 @@ class IkeaSpider(feapder.AirSpider):
             staged_product['previous_msg_id'] = returned_msg_id
 
     def get_product_log_str(self, ikea_product: IkeaProduct) -> str:
+        """Return a string containing product name, status code and stock number/restock date.
+
+        Args:
+            ikea_product (IkeaProduct): An IkeaProduct object of each product from the API response
+
+        Returns:
+            str: A string with the latest stock status, example: HEMNES TV bench - HIGH_IN_STOCK(14)
+        """
         # If product has a restock date rather than stock_num, use it instead
         if ikea_product.restock_date:
             stock_num_restock_date = ikea_product.restock_date
