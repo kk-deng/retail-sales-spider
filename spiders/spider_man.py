@@ -107,17 +107,27 @@ class RfdSpider(feapder.AirSpider):
                     msg_sent_counter = 0
 
                 # Collect the msg sending conditions, any of them is True
-                # TODO: 1st condition is for final upvotes, 2nd is for up only
+                # TODO: 1st condition (will send only 1 time) is for final upvotes, 2nd is for up only
                 sendmsg_conditions_1 = [
                     (topic.upvotes >= 4), 
                     topic.matched_keywords,
                     (topic.total_up/topic.elapsed_mins >= 0.4)
                 ]
-                sendmsg_conditions_2 = [(topic.upvotes >= 15),]
+                # 2nd condition (will send only 2 times) is upvote count > 15, or reply count > 15 
+                sendmsg_conditions_2 = [
+                    (topic.upvotes >= 15),
+                    (topic.total_replies >= 15),
+                ]
+
+                # 3rd condition (will send only 4 times) is views/min > 20
+                sendmsg_conditions_3 = [
+                    (topic.total_views/topic.elapsed_mins >= 70),
+                ]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal
                 if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
-                    (any(sendmsg_conditions_2) and msg_sent_counter < 2):
+                    (any(sendmsg_conditions_2) and msg_sent_counter < 2) or \
+                    (any(sendmsg_conditions_3) and msg_sent_counter < 3) :
                     # returned_msg = self.send_text_msg(topic, watchlist=f'{matched_keywords}*NEW*')
                     returned_msg = self.send_text_msg(topic)
                     if returned_msg:
@@ -170,22 +180,31 @@ class RfdSpider(feapder.AirSpider):
         dealer_name = topic.dealer_name
         offer_url = topic.offer_url
         matched_keywords = topic.matched_keywords
+        total_replies = topic.total_replies
+        total_views = topic.total_views
+        views_per_min = total_views/elapsed_mins
+        replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
+
 
         # Use up votes only, not final votes
         if total_up >= 8:
             hot_emoji = '🔥' * round(total_up / 8)
-            msg_header = f"{hot_emoji}*Hot Deal*:"
+            msg_header = f"{hot_emoji}*Hot*:"
         else:
             if upvotes_per_min >= 0.4 and total_up >= 2:
-                msg_header = "🚀*Trending Deal*:"
+                msg_header = "🚀*Trending*:"
+            elif views_per_min >= 20.0 and total_up >= 2:
+                msg_header = "✨*Breaking*:"
+                # replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
             else:
-                msg_header = "🆕*New Deal*:"
+                msg_header = "🆕*New*:"
 
         keywords = f'({matched_keywords}) ' if matched_keywords else ''
         
         msg_content = (
             f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
             f'👍*Votes*: *{upvotes}* votes (↑{total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+            + replies_n_views_str +
             f'📕*Title*: _({dealer_name.strip("[]")})_ {(escape_markdown(topic_title))} \n'
             f'🔗*Link*: {topic_link}'
         )
