@@ -166,7 +166,7 @@ class IkeaSpider(feapder.AirSpider):
                 if yield_conditions[1]:
                     msg_stock_num = f'{saved_product.get("stock_num", 0)} -> {ikea_product.stock_num}'
                 else:
-                    msg_stock_num = self.resolve_stock_num(ikea_product)
+                    msg_stock_num = ikea_product.stock_num
 
                 msg_content = (
                     f'*Name*: _{saved_product["title"]}_ (*{ikea_product.product_id}*)\n'
