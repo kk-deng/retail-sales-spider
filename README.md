@@ -1,4 +1,4 @@
-# Bestbuy & RFD Deals Spider
+# Retail Sales / Inventory Spider
 
 A web-scraping based on `feapder` web spider framework (A `scrapy`-like framework) which can collect sales data from **Bestbuy** and **IKEA.ca** website and send telegram messages when stocks of products change. It includes the following features:
 
