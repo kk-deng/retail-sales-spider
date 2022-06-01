@@ -23,7 +23,7 @@ from tools import file_input_output
 from utils.helpers import escape_markdown
 from utils.tg_bot import TelegramBot
 
-SCRAPE_COUNT = 2000
+SCRAPE_COUNT = 3000
 NIGHT_START_TIME = (1,00)
 NIGHT_END_TIME = (2,59)
 MORNING_TIME = (7,59)
@@ -121,7 +121,7 @@ class RfdSpider(feapder.AirSpider):
 
                 # 3rd condition (will send only 4 times) is views/min > 20
                 sendmsg_conditions_3 = [
-                    (topic.total_views/topic.elapsed_mins >= 70),
+                    (topic.total_views/topic.elapsed_mins >= 50),
                 ]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal

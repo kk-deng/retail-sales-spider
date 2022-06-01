@@ -170,7 +170,7 @@ class BBSpider(feapder.AirSpider):
                     else:
                         log.info(msg_content)
             
-            if len(out_of_stock_dict) > 0:
+            if out_of_stock_dict:
                 values = [f'{key}: {value}' for key, value in out_of_stock_dict.items()]
                 oos_msg = 'OOS SKUs: ' + ', '.join(values)
                 log.info(oos_msg)
