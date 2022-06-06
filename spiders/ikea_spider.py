@@ -11,7 +11,7 @@ import random
 import time
 from datetime import datetime, time as tm
 from functools import wraps
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional
 
 import feapder
 import telegram
@@ -313,7 +313,7 @@ class IkeaProduct:
             return 'Unknown'
     
     @property
-    def restock_date(self) -> str or None:
+    def restock_date(self) -> Optional[str]:
         description = self.status.get('description')
         if 'Estimated' in description:
             # Extract date from "Estimated back in stock: <b>2022-01-21</b>"
