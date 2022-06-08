@@ -170,46 +170,48 @@ class RfdSpider(feapder.AirSpider):
         Returns:
             telegram.Message: A Message object returned from send_bot_msg
         """
-        # Get strings from item_dict
-        elapsed_mins = topic.elapsed_mins
-        upvotes = topic.upvotes
-        total_up = topic.total_up
-        upvotes_per_min = upvotes/elapsed_mins
-        topic_title = topic.topic_title
-        topic_link = topic.topic_title_link
-        dealer_name = topic.dealer_name
-        offer_url = topic.offer_url
-        matched_keywords = topic.matched_keywords
-        total_replies = topic.total_replies
-        total_views = topic.total_views
-        views_per_min = total_views/elapsed_mins
-        replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
+        # # Get strings from item_dict
+        # elapsed_mins = topic.elapsed_mins
+        # upvotes = topic.upvotes
+        # total_up = topic.total_up
+        # upvotes_per_min = upvotes/elapsed_mins
+        # topic_title = topic.topic_title
+        # topic_link = topic.topic_title_link
+        # dealer_name = topic.dealer_name
+        # offer_url = topic.offer_url
+        # matched_keywords = topic.matched_keywords
+        # total_replies = topic.total_replies
+        # total_views = topic.total_views
+        # views_per_min = total_views/elapsed_mins
+        # replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
 
 
-        # Use up votes only, not final votes
-        if total_up >= 8:
-            hot_emoji = '🔥' * round(total_up / 8)
-            msg_header = f"{hot_emoji}*Hot*:"
-        else:
-            if upvotes_per_min >= 0.4 and total_up >= 2:
-                msg_header = "🚀*Trending*:"
-            elif views_per_min >= 20.0 and total_up >= 2:
-                msg_header = "✨*Breaking*:"
-                # replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
-            else:
-                msg_header = "🆕*New*:"
+        # # Use up votes only, not final votes
+        # if total_up >= 8:
+        #     hot_emoji = '🔥' * round(total_up / 8)
+        #     msg_header = f"{hot_emoji}*Hot*:"
+        # else:
+        #     if upvotes_per_min >= 0.4 and total_up >= 2:
+        #         msg_header = "🚀*Trending*:"
+        #     elif views_per_min >= 20.0 and total_up >= 2:
+        #         msg_header = "✨*Breaking*:"
+        #         # replies_n_views_str = f'*👀Reply|Views*: {total_replies} | {total_views} ({"{:.2f}".format(views_per_min)}/min)\n'
+        #     else:
+        #         msg_header = "🆕*New*:"
 
-        keywords = f'({matched_keywords}) ' if matched_keywords else ''
+        # keywords = f'({matched_keywords}) ' if matched_keywords else ''
         
-        msg_content = (
-            f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
-            f'👍*Votes*: *{upvotes}* votes (↑{total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
-            + replies_n_views_str +
-            f'📕*Title*: _({dealer_name.strip("[]")})_ {(escape_markdown(topic_title))} \n'
-            f'🔗*Link*: {topic_link}'
-        )
+        # msg_content = (
+        #     f'{msg_header} {keywords}@*{"{:.2f}".format(elapsed_mins)}* mins ago\n'
+        #     f'👍*Votes*: *{upvotes}* votes (↑{total_up} | ↓{topic.total_down}) ({"{:.2f}".format(upvotes_per_min)}/min)\n'
+        #     + replies_n_views_str +
+        #     f'📕*Title*: _({dealer_name.strip("[]")})_ {(escape_markdown(topic_title))} \n'
+        #     f'🔗*Link*: {topic_link}'
+        # )
         
-        return self.bot.send_bot_msg(content_msg=msg_content, markup_url=offer_url)
+        msg_content = str(topic)
+
+        return self.bot.send_bot_msg(content_msg=msg_content, markup_url=topic.offer_url)
 
     @staticmethod
     def log_new_topic(topic):
@@ -245,12 +247,14 @@ class RfdTopic:
         self.last_post_time = self.utc_to_local(topic['last_post_time'])
         self.elapsed_mins = self.compare_with_now(self.post_time)
         self.offer = topic['offer']
-        self.dealer_name = self.offer['dealer_name'] or ""
+        self.dealer_name = self.offer['dealer_name'].strip("[]") or ""
         self.offer_price = self.offer['price']
         self.offer_url = self.offer['url']
         self.offer_savings = self.offer['savings']
         self.offer_expires_at = self.offer['expires_at']
         self.watch_list = watch_list
+        self.upvotes_per_min = self.upvotes / self.elapsed_mins
+        self.views_per_min = self.total_views / self.elapsed_mins
     
     @staticmethod
     def utc_to_local(utc_dt: str) -> datetime:
@@ -278,7 +282,40 @@ class RfdTopic:
             return f'{"&".join(keyword_list)}'
         else:
             return None
+    
+    @property
+    def tg_msg_header(self) -> str:
+        """Return a msg header decided by the total_up and upvote/view rate."""
+        if self.total_up >= 8:
+            # If total upvotes are greater than 8, assign hot emoji
+            hot_emoji = '🔥' * round(self.total_up / 8)
+            return f"{hot_emoji}*Hot*:"
+        elif self.total_up >= 2:
+            # If total upvotes between 2 and 8
+            if self.upvotes_per_min >= 0.4:
+                # upvote rate is > 0.4/min, assign rocket emoji
+                return "🚀*Trending*:"
+            elif self.views_per_min >= 20.0:
+                # view rate is > 20/min, assign breaking emoji
+                return "✨*Breaking*:"
+        else:
+            # Anything else, assign New emoji
+            return "🆕*New*:"
 
+    def __str__(self):
+        # Other string components
+        replies_n_views_str = f'*👀Reply|Views*: {self.total_replies} | {self.total_views} ({self.views_per_min:.2f}/min)\n'
+
+        keywords_str = f'({self.matched_keywords}) ' if self.matched_keywords else ''
+
+        msg_content = (
+            f'{self.tg_msg_header} {keywords_str}@*{self.elapsed_mins:.2f}* mins ago\n'
+            f'👍*Votes*: *{self.upvotes}* votes (↑{self.total_up} | ↓{self.total_down}) ({self.upvotes_per_min:.2f}/min)\n{replies_n_views_str}'
+            f'📕*Title*: _({self.dealer_name})_ {(escape_markdown(self.topic_title))} \n'
+            f'🔗*Link*: {self.topic_title_link}'
+        )
+
+        return msg_content
 
 if __name__ == '__main__':
     spider = RfdSpider(thread_count=2)
