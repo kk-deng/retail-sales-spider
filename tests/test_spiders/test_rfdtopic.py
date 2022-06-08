@@ -35,3 +35,8 @@ def test_rfd_spider_send_text_msg(api_topic):
     spider = RfdSpider()
 
     assert type(spider.send_text_msg(api_topic)) is telegram.Message
+
+def test_rfd_topic_cls_str(api_topic):
+    msg_content = str(api_topic)
+    assert '*Hot*' in msg_content
+    assert 'Reply|Views' in msg_content
