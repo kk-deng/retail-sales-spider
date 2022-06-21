@@ -1,0 +1,33 @@
+{
+    "itemNumber": "1550251",
+    "orderItemId": "0",
+    "availability": "INSTOCK",
+    "availableForSale": true,
+    "itemClassification": "SMALLPACK",
+    "fulfilledBy": null,
+    "firstShipDate": null,
+    "lastShipDate": null,
+    "availableToSellDate": null,
+    "typeDescription": null,
+    "status": "200 OK",
+    "quantityRequested": 1,
+    "webCatalogId": "559-wm",
+    "distributionCenter": "559-WM",
+    "fulfillmentCenterCompanyId": 3,
+    "fulfillmentType": "depot",
+    "isComplex": false,
+    "requiresAssembly": false,
+    "disableShipMethodCode": false,
+    "description": null,
+    "eddRequestTransactionId": "5585ea40-ed72-45bc-b33b-364da655b3eb",
+    "shipmodeDates": [
+        {
+            "status": "200 OK",
+            "shippingCode": "UPG",
+            "supplierAvailabilityDate": "2022-06-07T00:00:00",
+            "estimatedDeliveryDate": "2022-06-08T00:00:00",
+            "description": null,
+            "availableDeliveryDates": null
+        }
+    ]
+}

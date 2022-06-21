@@ -1,0 +1,49 @@
+{
+    "topic_id": 2512445, 
+    "forum_id": 9, 
+    "title": "Fido Internet 150Mps service for 42.50  (first 12 months)", 
+    "slug": "fido-fido-internet-150mps-service-42-50-first-12-months", 
+    "author_id": 21329, 
+    "is_subscribed": false, 
+    "can_subscribe": false, 
+    "can_report": false, 
+    "can_reply": false, 
+    "is_poll": false, 
+    "status": 0, 
+    "type": 0, 
+    "post_time": "2021-12-16T22:05:26+00:00", 
+    "last_post_time": "2022-01-03T20:53:40+00:00", 
+    "first_post_id": 35448857, 
+    "last_post_id": 35533982, 
+    "total_replies": 213, 
+    "has_new_post": false, 
+    "total_views": 32290, 
+    "visibility": 1, 
+    "has_replied": false, 
+    "attachments": [], 
+    "shadow_type": 0, 
+    "votes": {
+        "total_up": 50, 
+        "total_down": 2, 
+        "current_vote": 0, 
+        "can_vote_up": false, 
+        "can_vote_down": false
+        }, 
+    "prefix": null, 
+    "summary": {
+        "can_edit": false, 
+        "body": ""
+    }, 
+    "trader_type": null, 
+    "web_path": "/fido-fido-internet-150mps-service-42-50-first-12-months-2512445/", 
+    "offer": {
+        "category_id": 5125, 
+        "dealer_id": 158, 
+        "dealer_name": "Fido", 
+        "url": "https://www.fido.ca/internet/packages", 
+        "price": "42.50", 
+        "savings": "50% off", 
+        "expires_at": null, 
+        "holiday": 0
+    }
+}
