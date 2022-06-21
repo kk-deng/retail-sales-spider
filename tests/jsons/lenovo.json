@@ -1,0 +1,1017 @@
+{
+    "xrid": "2f14cf43280827bada01d06c77c7e8e8",
+    "status": 200,
+    "msg": "operation successful!",
+    "data": {
+        "pageCount": 1,
+        "cost": 95,
+        "data": [
+            {
+                "productName": "NB TP Z16 G1 R5_PRO 16G 512G 11P",
+                "productType": "0",
+                "productCode": "21D4000FUS",
+                "productStatus": "",
+                "webPrice": "3889.00",
+                "finalPrice": "2527.85",
+                "couponPrice": "2527.85",
+                "couponSaveAmount": "1361.15",
+                "couponSavePercentage": "35",
+                "saveAmount": "1361.15",
+                "savePercent": "35",
+                "couponCode": "THINKJUNE",
+                "isMedion": false,
+                "ratingStar": "0.0",
+                "commentCount": 0,
+                "marketingStatus": "Available",
+                "modelsCount": 0,
+                "leadTime": 85,
+                "leadTimeMessage": "Ships in 3+ months",
+                "inventoryStatus": 1,
+                "currencySymbol": "$",
+                "currencyCode": "CAD",
+                "modifyTime": 1655700587327,
+                "onlineDate": 1655384469000,
+                "categoryPath": [
+                    "ROOTPMI",
+                    "laptops",
+                    "thinkpad",
+                    "thinkpadz",
+                    "LEN101T0037"
+                ],
+                "machineType": "22TPZ16Z6A121D4",
+                "merchandisingFlag": {
+                    "text": "<p><strong><span style=\"font-size: 14px;\">NEW ARRIVAL</span></strong></p>",
+                    "bgColor": "#000",
+                    "type": "static"
+                },
+                "media": {
+                    "gallery": [
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop open 90 degrees, angled slightly to show left-side ports.",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/zbst4k2xqot7uztmqnpout3c1wg5tw022943.png"
+                        },
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 with focus on the display and Windows 11 Pro. ",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/eyj3jydrfyeoutsuuq2vh7hrve8azt349618.png"
+                        },
+                        {
+                            "imageName": "Overhead shot of the Lenovo ThinkPad Z16 laptop open 90 degrees, focusing on the keyboard.",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/35w7epdiu5ktnwdm5bvlv7atf3ls0f461344.png"
+                        },
+                        {
+                            "imageName": "Front-facing profile with cover closed on the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/l91877qjdezoo77van8u9urb6a3k8u500219.png"
+                        },
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop showcasing recycled aluminum chassis. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/6q1slqk772n1hdvmjr8f8anokbzkb3808185.png"
+                        },
+                        {
+                            "imageName": "Closed-cover recycled aluminum Lenovo ThinkPad Z16 laptop, angled to show right-side ports and rear hinge.",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/b0w5014olbnap01t9td0rfd8lpivkl943533.png"
+                        },
+                        {
+                            "imageName": "Bottom side of the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/5z8gmpo6kjih4j73k7o1ovk4oxb28k112469.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing right-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/zgckke52c3x8xz7dz3s5u2xncaqmt2046443.png"
+                        },
+                        {
+                            "imageName": "Close-up of right-side ports on the Lenovo ThinkPad Z16 laptop open 10 degrees. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/ncj03knn6zkhg0b0ek3v0is5emb4cn986941.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing left-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/05/02/zyvsmkr5k4v0e5q6pyrzepwuamg85z776869.png"
+                        }
+                    ],
+                    "listImage": [
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/uf0uopin61983axxnp1rsircn0t81l099045.png"
+                        }
+                    ],
+                    "heroImage": {
+                        "imageName": "Front-facing Lenovo ThinkPad Z16 laptop open 90 degrees, angled to show right-side ports.",
+                        "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/65kfbwvftiqkgti1q6l4pixnh1fig3043050.png"
+                    }
+                },
+                "classification": [
+                    {
+                        "a": "Processor",
+                        "b": "AMD Ryzen™ 5 PRO 6650H Processor (3.30 GHz, up to 4.50 GHz Max Boost, 6 Cores, 12 Threads, 16 MB Cache)",
+                        "c": 100
+                    },
+                    {
+                        "a": "Operating System",
+                        "b": "Windows 11 Pro 64",
+                        "c": 99
+                    },
+                    {
+                        "a": "Graphics",
+                        "b": "AMD Radeon™ RX 6500M 4GB",
+                        "c": 98
+                    },
+                    {
+                        "a": "Memory",
+                        "b": "16 GB LPDDR5 6400MHz (Soldered)",
+                        "c": 97
+                    },
+                    {
+                        "a": "Storage",
+                        "b": "512 GB PCIe SSD Gen 4 Performance",
+                        "c": 96
+                    },
+                    {
+                        "a": "Display",
+                        "b": "16.0\" WUXGA (1920 x 1200) IPS, anti-glare, 400 nits",
+                        "c": 95
+                    },
+                    {
+                        "a": "Camera",
+                        "b": "IR & 1080p FHD Hybrid",
+                        "c": 94
+                    },
+                    {
+                        "a": "Fingerprint Reader",
+                        "b": "Fingerprint Reader",
+                        "c": 83
+                    },
+                    {
+                        "a": "Keyboard",
+                        "b": "Backlit - US English",
+                        "c": 81
+                    },
+                    {
+                        "a": "WLAN",
+                        "b": "802.11AX (2 x 2) & Bluetooth® 5.2",
+                        "c": 78
+                    },
+                    {
+                        "a": "Warranty",
+                        "b": "1 Year Onsite",
+                        "c": 73
+                    }
+                ],
+                "featuresBenefits": "<p><br/></p>",
+                "marketingLongDescription": "<ul style=\"list-style-type: disc;\"><li><p>16&quot; performance powerhouse running on AMD Ryzen™ PRO 6000 H Series mobile processors</p></li><li><p>Made from recycled aluminum &amp; post-consumer content recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology with Microsoft Pluton</p></li><li><p>Premium FHD IR camera, Dolby Voice®, &amp; Dolby Atmos<sup>®</sup> Speaker System</p></li><li><p>AMD discrete graphics options ideal for content creators</p></li><li><p>Refined keyboard with enhanced dual-purpose TrackPoint</p></li></ul>",
+                "marketingShortDescription": "<ul style=\"list-style-type: disc;\"><li><p>Performance powerhouse with AMD Ryzen™ Pro 6000 H Series</p></li><li><p>Made from recycled aluminum &amp; PCC recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology</p></li></ul>",
+                "description": "<p><br/></p>",
+                "summary": "ThinkPad Z16 AMD (16″)",
+                "url": "/p/laptops/thinkpad/thinkpadz/thinkpad-z16-16-amd/21D4000FUS",
+                "flCode": "laptops",
+                "flName": "Laptops",
+                "hasClaimIndicator": false,
+                "maxBuy": 2,
+                "maxBuyMessage": "eCoupon limited to  2 units",
+                "couponCount": -1,
+                "couponConsumed": false,
+                "couponProgress": -1,
+                "couponRuleDiscount": 35,
+                "couponDiscountType": 2,
+                "isDCGSubseries": false,
+                "isOutlet": false,
+                "outletFlagColor": "#4C1984"
+            },
+            {
+                "productName": "NB TP Z16 G1 R7_PRO 16G 1T 11P",
+                "productType": "0",
+                "productCode": "21D4000GUS",
+                "productStatus": "",
+                "webPrice": "4239.00",
+                "finalPrice": "2755.35",
+                "couponPrice": "2755.35",
+                "couponSaveAmount": "1483.65",
+                "couponSavePercentage": "35",
+                "saveAmount": "1483.65",
+                "savePercent": "35",
+                "couponCode": "THINKJUNE",
+                "isMedion": false,
+                "ratingStar": "0.0",
+                "commentCount": 0,
+                "marketingStatus": "Available",
+                "modelsCount": 0,
+                "leadTime": 85,
+                "leadTimeMessage": "Ships in 3+ months",
+                "inventoryStatus": 1,
+                "currencySymbol": "$",
+                "currencyCode": "CAD",
+                "modifyTime": 1655700588114,
+                "onlineDate": 1655387470000,
+                "categoryPath": [
+                    "ROOTPMI",
+                    "laptops",
+                    "thinkpad",
+                    "thinkpadz",
+                    "LEN101T0037"
+                ],
+                "machineType": "22TPZ16Z6A121D4",
+                "merchandisingFlag": {
+                    "text": "<p><strong><span style=\"font-size: 14px;\">NEW ARRIVAL</span></strong></p>",
+                    "bgColor": "#000",
+                    "type": "static"
+                },
+                "media": {
+                    "gallery": [
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop open 90 degrees, angled slightly to show left-side ports.",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/zbst4k2xqot7uztmqnpout3c1wg5tw022943.png"
+                        },
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 with focus on the display and Windows 11 Pro. ",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/eyj3jydrfyeoutsuuq2vh7hrve8azt349618.png"
+                        },
+                        {
+                            "imageName": "Overhead shot of the Lenovo ThinkPad Z16 laptop open 90 degrees, focusing on the keyboard.",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/35w7epdiu5ktnwdm5bvlv7atf3ls0f461344.png"
+                        },
+                        {
+                            "imageName": "Front-facing profile with cover closed on the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/l91877qjdezoo77van8u9urb6a3k8u500219.png"
+                        },
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop showcasing recycled aluminum chassis. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/6q1slqk772n1hdvmjr8f8anokbzkb3808185.png"
+                        },
+                        {
+                            "imageName": "Closed-cover recycled aluminum Lenovo ThinkPad Z16 laptop, angled to show right-side ports and rear hinge.",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/b0w5014olbnap01t9td0rfd8lpivkl943533.png"
+                        },
+                        {
+                            "imageName": "Bottom side of the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/5z8gmpo6kjih4j73k7o1ovk4oxb28k112469.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing right-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/zgckke52c3x8xz7dz3s5u2xncaqmt2046443.png"
+                        },
+                        {
+                            "imageName": "Close-up of right-side ports on the Lenovo ThinkPad Z16 laptop open 10 degrees. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/ncj03knn6zkhg0b0ek3v0is5emb4cn986941.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing left-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/05/02/zyvsmkr5k4v0e5q6pyrzepwuamg85z776869.png"
+                        }
+                    ],
+                    "listImage": [
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/uf0uopin61983axxnp1rsircn0t81l099045.png"
+                        }
+                    ],
+                    "heroImage": {
+                        "imageName": "Front-facing Lenovo ThinkPad Z16 laptop open 90 degrees, angled to show right-side ports.",
+                        "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/65kfbwvftiqkgti1q6l4pixnh1fig3043050.png"
+                    }
+                },
+                "classification": [
+                    {
+                        "a": "Processor",
+                        "b": "AMD Ryzen™ 7 PRO 6850H Processor (3.20 GHz, up to 4.70 GHz Max Boost, 8 Cores, 16 Threads, 16 MB Cache)",
+                        "c": 100
+                    },
+                    {
+                        "a": "Operating System",
+                        "b": "Windows 11 Pro 64",
+                        "c": 99
+                    },
+                    {
+                        "a": "Graphics",
+                        "b": "AMD Radeon™ RX 6500M 4GB",
+                        "c": 98
+                    },
+                    {
+                        "a": "Memory",
+                        "b": "16 GB LPDDR5 6400MHz (Soldered)",
+                        "c": 97
+                    },
+                    {
+                        "a": "Storage",
+                        "b": "1 TB PCIe SSD Gen 4 Performance",
+                        "c": 96
+                    },
+                    {
+                        "a": "Display",
+                        "b": "16.0\" WUXGA (1920 x 1200) IPS, anti-glare, 400 nits",
+                        "c": 95
+                    },
+                    {
+                        "a": "Camera",
+                        "b": "IR & 1080p FHD Hybrid",
+                        "c": 94
+                    },
+                    {
+                        "a": "Fingerprint Reader",
+                        "b": "Fingerprint Reader",
+                        "c": 83
+                    },
+                    {
+                        "a": "Keyboard",
+                        "b": "Backlit - US English",
+                        "c": 81
+                    },
+                    {
+                        "a": "WLAN",
+                        "b": "802.11AX (2 x 2) & Bluetooth® 5.2",
+                        "c": 78
+                    },
+                    {
+                        "a": "Warranty",
+                        "b": "1 Year Onsite",
+                        "c": 73
+                    }
+                ],
+                "featuresBenefits": "<p><br/></p>",
+                "marketingLongDescription": "<ul style=\"list-style-type: disc;\"><li><p>16&quot; performance powerhouse running on AMD Ryzen™ PRO 6000 H Series mobile processors</p></li><li><p>Made from recycled aluminum &amp; post-consumer content recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology with Microsoft Pluton</p></li><li><p>Premium FHD IR camera, Dolby Voice®, &amp; Dolby Atmos<sup>®</sup> Speaker System</p></li><li><p>AMD discrete graphics options ideal for content creators</p></li><li><p>Refined keyboard with enhanced dual-purpose TrackPoint</p></li></ul>",
+                "marketingShortDescription": "<ul style=\"list-style-type: disc;\"><li><p>Performance powerhouse with AMD Ryzen™ Pro 6000 H Series</p></li><li><p>Made from recycled aluminum &amp; PCC recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology</p></li></ul>",
+                "description": "<p><br/></p>",
+                "summary": "ThinkPad Z16 AMD (16″)",
+                "url": "/p/laptops/thinkpad/thinkpadz/thinkpad-z16-16-amd/21D4000GUS",
+                "flCode": "laptops",
+                "flName": "Laptops",
+                "hasClaimIndicator": false,
+                "maxBuy": 2,
+                "maxBuyMessage": "eCoupon limited to  2 units",
+                "couponCount": -1,
+                "couponConsumed": false,
+                "couponProgress": -1,
+                "couponRuleDiscount": 35,
+                "couponDiscountType": 2,
+                "isDCGSubseries": false,
+                "isOutlet": false,
+                "outletFlagColor": "#4C1984"
+            },
+            {
+                "productName": "NB TP Z16 G1 R7_PRO 16G 512G 11P",
+                "productType": "0",
+                "productCode": "21D4000JUS",
+                "productStatus": "",
+                "webPrice": "4289.00",
+                "finalPrice": "2787.85",
+                "couponPrice": "2787.85",
+                "couponSaveAmount": "1501.15",
+                "couponSavePercentage": "35",
+                "saveAmount": "1501.15",
+                "savePercent": "35",
+                "couponCode": "THINKJUNE",
+                "isMedion": false,
+                "ratingStar": "0.0",
+                "commentCount": 0,
+                "marketingStatus": "Available",
+                "modelsCount": 0,
+                "leadTime": 85,
+                "leadTimeMessage": "Ships in 3+ months",
+                "inventoryStatus": 1,
+                "currencySymbol": "$",
+                "currencyCode": "CAD",
+                "modifyTime": 1655700588480,
+                "onlineDate": 1655390937000,
+                "categoryPath": [
+                    "ROOTPMI",
+                    "laptops",
+                    "thinkpad",
+                    "thinkpadz",
+                    "LEN101T0037"
+                ],
+                "machineType": "22TPZ16Z6A121D4",
+                "merchandisingFlag": {
+                    "text": "<p><strong><span style=\"font-size: 14px;\">NEW ARRIVAL</span></strong></p>",
+                    "bgColor": "#000",
+                    "type": "static"
+                },
+                "media": {
+                    "gallery": [
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop open 90 degrees, angled slightly to show left-side ports.",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/zbst4k2xqot7uztmqnpout3c1wg5tw022943.png"
+                        },
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 with focus on the display and Windows 11 Pro. ",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/eyj3jydrfyeoutsuuq2vh7hrve8azt349618.png"
+                        },
+                        {
+                            "imageName": "Overhead shot of the Lenovo ThinkPad Z16 laptop open 90 degrees, focusing on the keyboard.",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/35w7epdiu5ktnwdm5bvlv7atf3ls0f461344.png"
+                        },
+                        {
+                            "imageName": "Front-facing profile with cover closed on the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/l91877qjdezoo77van8u9urb6a3k8u500219.png"
+                        },
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop showcasing recycled aluminum chassis. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/6q1slqk772n1hdvmjr8f8anokbzkb3808185.png"
+                        },
+                        {
+                            "imageName": "Closed-cover recycled aluminum Lenovo ThinkPad Z16 laptop, angled to show right-side ports and rear hinge.",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/b0w5014olbnap01t9td0rfd8lpivkl943533.png"
+                        },
+                        {
+                            "imageName": "Bottom side of the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/5z8gmpo6kjih4j73k7o1ovk4oxb28k112469.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing right-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/zgckke52c3x8xz7dz3s5u2xncaqmt2046443.png"
+                        },
+                        {
+                            "imageName": "Close-up of right-side ports on the Lenovo ThinkPad Z16 laptop open 10 degrees. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/ncj03knn6zkhg0b0ek3v0is5emb4cn986941.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing left-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/05/02/zyvsmkr5k4v0e5q6pyrzepwuamg85z776869.png"
+                        }
+                    ],
+                    "listImage": [
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/uf0uopin61983axxnp1rsircn0t81l099045.png"
+                        }
+                    ],
+                    "heroImage": {
+                        "imageName": "Front-facing Lenovo ThinkPad Z16 laptop open 90 degrees, angled to show right-side ports.",
+                        "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/65kfbwvftiqkgti1q6l4pixnh1fig3043050.png"
+                    }
+                },
+                "classification": [
+                    {
+                        "a": "Processor",
+                        "b": "AMD Ryzen™ 7 PRO 6850H Processor (3.20 GHz, up to 4.70 GHz Max Boost, 8 Cores, 16 Threads, 16 MB Cache)",
+                        "c": 100
+                    },
+                    {
+                        "a": "Operating System",
+                        "b": "Windows 11 Pro 64",
+                        "c": 99
+                    },
+                    {
+                        "a": "Graphics",
+                        "b": "AMD Radeon™ RX 6500M 4GB",
+                        "c": 98
+                    },
+                    {
+                        "a": "Memory",
+                        "b": "16 GB LPDDR5 6400MHz (Soldered)",
+                        "c": 97
+                    },
+                    {
+                        "a": "Storage",
+                        "b": "512 GB PCIe SSD Gen 4 Performance",
+                        "c": 96
+                    },
+                    {
+                        "a": "Display",
+                        "b": "16.0\" WUXGA (1920 x 1200) IPS, anti-reflective, anti-smudge, touchscreen, 400 nits",
+                        "c": 95
+                    },
+                    {
+                        "a": "Camera",
+                        "b": "IR & 1080p FHD Hybrid",
+                        "c": 94
+                    },
+                    {
+                        "a": "Fingerprint Reader",
+                        "b": "Fingerprint Reader",
+                        "c": 83
+                    },
+                    {
+                        "a": "Keyboard",
+                        "b": "Backlit - US English",
+                        "c": 81
+                    },
+                    {
+                        "a": "WLAN",
+                        "b": "802.11AX (2 x 2) & Bluetooth® 5.2",
+                        "c": 78
+                    },
+                    {
+                        "a": "Warranty",
+                        "b": "1 Year Onsite",
+                        "c": 73
+                    }
+                ],
+                "featuresBenefits": "<p><br/></p>",
+                "marketingLongDescription": "<ul style=\"list-style-type: disc;\"><li><p>16&quot; performance powerhouse running on AMD Ryzen™ PRO 6000 H Series mobile processors</p></li><li><p>Made from recycled aluminum &amp; post-consumer content recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology with Microsoft Pluton</p></li><li><p>Premium FHD IR camera, Dolby Voice®, &amp; Dolby Atmos<sup>®</sup> Speaker System</p></li><li><p>AMD discrete graphics options ideal for content creators</p></li><li><p>Refined keyboard with enhanced dual-purpose TrackPoint</p></li></ul>",
+                "marketingShortDescription": "<ul style=\"list-style-type: disc;\"><li><p>Performance powerhouse with AMD Ryzen™ Pro 6000 H Series</p></li><li><p>Made from recycled aluminum &amp; PCC recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology</p></li></ul>",
+                "description": "<p><br/></p>",
+                "summary": "ThinkPad Z16 AMD (16″)",
+                "url": "/p/laptops/thinkpad/thinkpadz/thinkpad-z16-16-amd/21D4000JUS",
+                "flCode": "laptops",
+                "flName": "Laptops",
+                "hasClaimIndicator": false,
+                "maxBuy": 2,
+                "maxBuyMessage": "eCoupon limited to  2 units",
+                "couponCount": -1,
+                "couponConsumed": false,
+                "couponProgress": -1,
+                "couponRuleDiscount": 35,
+                "couponDiscountType": 2,
+                "isDCGSubseries": false,
+                "isOutlet": false,
+                "outletFlagColor": "#4C1984"
+            },
+            {
+                "productName": "NB TP Z16 G1 R9_PRO 32G 1T 11P",
+                "productType": "0",
+                "productCode": "21D4000KUS",
+                "productStatus": "",
+                "webPrice": "5179.00",
+                "finalPrice": "3366.35",
+                "couponPrice": "3366.35",
+                "couponSaveAmount": "1812.65",
+                "couponSavePercentage": "35",
+                "saveAmount": "1812.65",
+                "savePercent": "35",
+                "couponCode": "THINKJUNE",
+                "isMedion": false,
+                "ratingStar": "0.0",
+                "commentCount": 0,
+                "marketingStatus": "Available",
+                "modelsCount": 0,
+                "leadTime": 85,
+                "leadTimeMessage": "Ships in 3+ months",
+                "inventoryStatus": 1,
+                "currencySymbol": "$",
+                "currencyCode": "CAD",
+                "modifyTime": 1655700586895,
+                "onlineDate": 1655392167000,
+                "categoryPath": [
+                    "ROOTPMI",
+                    "laptops",
+                    "thinkpad",
+                    "thinkpadz",
+                    "LEN101T0037"
+                ],
+                "machineType": "22TPZ16Z6A121D4",
+                "merchandisingFlag": {
+                    "text": "<p><strong><span style=\"font-size: 14px;\">NEW ARRIVAL</span></strong></p>",
+                    "bgColor": "#000",
+                    "type": "static"
+                },
+                "media": {
+                    "gallery": [
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop open 90 degrees, angled slightly to show left-side ports.",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/zbst4k2xqot7uztmqnpout3c1wg5tw022943.png"
+                        },
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 with focus on the display and Windows 11 Pro. ",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/eyj3jydrfyeoutsuuq2vh7hrve8azt349618.png"
+                        },
+                        {
+                            "imageName": "Overhead shot of the Lenovo ThinkPad Z16 laptop open 90 degrees, focusing on the keyboard.",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/35w7epdiu5ktnwdm5bvlv7atf3ls0f461344.png"
+                        },
+                        {
+                            "imageName": "Front-facing profile with cover closed on the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/l91877qjdezoo77van8u9urb6a3k8u500219.png"
+                        },
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop showcasing recycled aluminum chassis. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/6q1slqk772n1hdvmjr8f8anokbzkb3808185.png"
+                        },
+                        {
+                            "imageName": "Closed-cover recycled aluminum Lenovo ThinkPad Z16 laptop, angled to show right-side ports and rear hinge.",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/b0w5014olbnap01t9td0rfd8lpivkl943533.png"
+                        },
+                        {
+                            "imageName": "Bottom side of the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/5z8gmpo6kjih4j73k7o1ovk4oxb28k112469.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing right-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/zgckke52c3x8xz7dz3s5u2xncaqmt2046443.png"
+                        },
+                        {
+                            "imageName": "Close-up of right-side ports on the Lenovo ThinkPad Z16 laptop open 10 degrees. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/ncj03knn6zkhg0b0ek3v0is5emb4cn986941.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing left-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/05/02/zyvsmkr5k4v0e5q6pyrzepwuamg85z776869.png"
+                        }
+                    ],
+                    "listImage": [
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/uf0uopin61983axxnp1rsircn0t81l099045.png"
+                        }
+                    ],
+                    "heroImage": {
+                        "imageName": "Front-facing Lenovo ThinkPad Z16 laptop open 90 degrees, angled to show right-side ports.",
+                        "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/65kfbwvftiqkgti1q6l4pixnh1fig3043050.png"
+                    }
+                },
+                "classification": [
+                    {
+                        "a": "Processor",
+                        "b": "AMD Ryzen™ 9 PRO 6950H Processor (3.30 GHz, up to 4.90 GHz Max Boost, 8 Cores, 16 Threads, 16 MB Cache)",
+                        "c": 100
+                    },
+                    {
+                        "a": "Operating System",
+                        "b": "Windows 11 Pro 64",
+                        "c": 99
+                    },
+                    {
+                        "a": "Graphics",
+                        "b": "AMD Radeon™ RX 6500M 4GB",
+                        "c": 98
+                    },
+                    {
+                        "a": "Memory",
+                        "b": "32 GB LPDDR5 6400MHz (Soldered)",
+                        "c": 97
+                    },
+                    {
+                        "a": "Storage",
+                        "b": "1 TB PCIe SSD Gen 4 Performance",
+                        "c": 96
+                    },
+                    {
+                        "a": "Display",
+                        "b": "16.0\" WUXGA (1920 x 1200) IPS, anti-reflective, anti-smudge, touchscreen, 400 nits",
+                        "c": 95
+                    },
+                    {
+                        "a": "Camera",
+                        "b": "IR & 1080p FHD Hybrid",
+                        "c": 94
+                    },
+                    {
+                        "a": "Fingerprint Reader",
+                        "b": "Fingerprint Reader",
+                        "c": 83
+                    },
+                    {
+                        "a": "Keyboard",
+                        "b": "Backlit - US English",
+                        "c": 81
+                    },
+                    {
+                        "a": "WLAN",
+                        "b": "802.11AX (2 x 2) & Bluetooth® 5.2",
+                        "c": 78
+                    },
+                    {
+                        "a": "Warranty",
+                        "b": "1 Year Onsite",
+                        "c": 73
+                    }
+                ],
+                "featuresBenefits": "<p><br/></p>",
+                "marketingLongDescription": "<ul style=\"list-style-type: disc;\"><li><p>16&quot; performance powerhouse running on AMD Ryzen™ PRO 6000 H Series mobile processors</p></li><li><p>Made from recycled aluminum &amp; post-consumer content recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology with Microsoft Pluton</p></li><li><p>Premium FHD IR camera, Dolby Voice®, &amp; Dolby Atmos<sup>®</sup> Speaker System</p></li><li><p>AMD discrete graphics options ideal for content creators</p></li><li><p>Refined keyboard with enhanced dual-purpose TrackPoint</p></li></ul>",
+                "marketingShortDescription": "<ul style=\"list-style-type: disc;\"><li><p>Performance powerhouse with AMD Ryzen™ Pro 6000 H Series</p></li><li><p>Made from recycled aluminum &amp; PCC recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology</p></li></ul>",
+                "description": "<p><br/></p>",
+                "summary": "ThinkPad Z16 AMD (16″)",
+                "url": "/p/laptops/thinkpad/thinkpadz/thinkpad-z16-16-amd/21D4000KUS",
+                "flCode": "laptops",
+                "flName": "Laptops",
+                "hasClaimIndicator": false,
+                "maxBuy": 2,
+                "maxBuyMessage": "eCoupon limited to  2 units",
+                "couponCount": -1,
+                "couponConsumed": false,
+                "couponProgress": -1,
+                "couponRuleDiscount": 35,
+                "couponDiscountType": 2,
+                "isDCGSubseries": false,
+                "isOutlet": false,
+                "outletFlagColor": "#4C1984"
+            },
+            {
+                "productName": "NB TP Z16 G1 R7_PRO 32G 2T 11P",
+                "productType": "0",
+                "productCode": "21D4000HUS",
+                "productStatus": "",
+                "webPrice": "5519.00",
+                "finalPrice": "3587.35",
+                "couponPrice": "3587.35",
+                "couponSaveAmount": "1931.65",
+                "couponSavePercentage": "35",
+                "saveAmount": "1931.65",
+                "savePercent": "35",
+                "couponCode": "THINKJUNE",
+                "isMedion": false,
+                "ratingStar": "0.0",
+                "commentCount": 0,
+                "marketingStatus": "Available",
+                "modelsCount": 0,
+                "leadTime": 85,
+                "leadTimeMessage": "Ships in 3+ months",
+                "inventoryStatus": 1,
+                "currencySymbol": "$",
+                "currencyCode": "CAD",
+                "modifyTime": 1655700587736,
+                "onlineDate": 1655390050000,
+                "categoryPath": [
+                    "ROOTPMI",
+                    "laptops",
+                    "thinkpad",
+                    "thinkpadz",
+                    "LEN101T0037"
+                ],
+                "machineType": "22TPZ16Z6A121D4",
+                "merchandisingFlag": {
+                    "text": "<p><strong><span style=\"font-size: 14px;\">NEW ARRIVAL</span></strong></p>",
+                    "bgColor": "#000",
+                    "type": "static"
+                },
+                "media": {
+                    "gallery": [
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop open 90 degrees, angled slightly to show left-side ports.",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/zbst4k2xqot7uztmqnpout3c1wg5tw022943.png"
+                        },
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 with focus on the display and Windows 11 Pro. ",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/eyj3jydrfyeoutsuuq2vh7hrve8azt349618.png"
+                        },
+                        {
+                            "imageName": "Overhead shot of the Lenovo ThinkPad Z16 laptop open 90 degrees, focusing on the keyboard.",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/35w7epdiu5ktnwdm5bvlv7atf3ls0f461344.png"
+                        },
+                        {
+                            "imageName": "Front-facing profile with cover closed on the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/l91877qjdezoo77van8u9urb6a3k8u500219.png"
+                        },
+                        {
+                            "imageName": "Lenovo ThinkPad Z16 laptop showcasing recycled aluminum chassis. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/6q1slqk772n1hdvmjr8f8anokbzkb3808185.png"
+                        },
+                        {
+                            "imageName": "Closed-cover recycled aluminum Lenovo ThinkPad Z16 laptop, angled to show right-side ports and rear hinge.",
+                            "imageAddress": "//p4-ofp.static.pub/fes/cms/2022/04/29/b0w5014olbnap01t9td0rfd8lpivkl943533.png"
+                        },
+                        {
+                            "imageName": "Bottom side of the Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p2-ofp.static.pub/fes/cms/2022/04/29/5z8gmpo6kjih4j73k7o1ovk4oxb28k112469.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing right-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/zgckke52c3x8xz7dz3s5u2xncaqmt2046443.png"
+                        },
+                        {
+                            "imageName": "Close-up of right-side ports on the Lenovo ThinkPad Z16 laptop open 10 degrees. ",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/ncj03knn6zkhg0b0ek3v0is5emb4cn986941.png"
+                        },
+                        {
+                            "imageName": "Profile of the Lenovo ThinkPad Z16 open 90 degrees showing left-side ports.",
+                            "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/05/02/zyvsmkr5k4v0e5q6pyrzepwuamg85z776869.png"
+                        }
+                    ],
+                    "listImage": [
+                        {
+                            "imageName": "Front-facing Lenovo ThinkPad Z16 laptop. ",
+                            "imageAddress": "//p3-ofp.static.pub/fes/cms/2022/04/29/uf0uopin61983axxnp1rsircn0t81l099045.png"
+                        }
+                    ],
+                    "heroImage": {
+                        "imageName": "Front-facing Lenovo ThinkPad Z16 laptop open 90 degrees, angled to show right-side ports.",
+                        "imageAddress": "//p1-ofp.static.pub/fes/cms/2022/04/29/65kfbwvftiqkgti1q6l4pixnh1fig3043050.png"
+                    }
+                },
+                "classification": [
+                    {
+                        "a": "Processor",
+                        "b": "AMD Ryzen™ 7 PRO 6850H Processor (3.20 GHz, up to 4.70 GHz Max Boost, 8 Cores, 16 Threads, 16 MB Cache)",
+                        "c": 100
+                    },
+                    {
+                        "a": "Operating System",
+                        "b": "Windows 11 Pro 64",
+                        "c": 99
+                    },
+                    {
+                        "a": "Graphics",
+                        "b": "AMD Radeon™ RX 6500M 4GB",
+                        "c": 98
+                    },
+                    {
+                        "a": "Memory",
+                        "b": "32 GB LPDDR5 6400MHz (Soldered)",
+                        "c": 97
+                    },
+                    {
+                        "a": "Storage",
+                        "b": "2 TB PCIe SSD Gen 4 Performance",
+                        "c": 96
+                    },
+                    {
+                        "a": "Display",
+                        "b": "16.0\" WQUXGA (3840 x 2400) OLED, anti-reflective, anti-smudge, touchscreen with Dolby Vision™, 400 nits",
+                        "c": 95
+                    },
+                    {
+                        "a": "Camera",
+                        "b": "IR & 1080p FHD",
+                        "c": 94
+                    },
+                    {
+                        "a": "Fingerprint Reader",
+                        "b": "Fingerprint Reader",
+                        "c": 83
+                    },
+                    {
+                        "a": "Keyboard",
+                        "b": "Backlit - US English",
+                        "c": 81
+                    },
+                    {
+                        "a": "WLAN",
+                        "b": "802.11AX (2 x 2) & Bluetooth® 5.2",
+                        "c": 78
+                    },
+                    {
+                        "a": "Warranty",
+                        "b": "1 Year Onsite",
+                        "c": 73
+                    }
+                ],
+                "featuresBenefits": "<p><br/></p>",
+                "marketingLongDescription": "<ul style=\"list-style-type: disc;\"><li><p>16&quot; performance powerhouse running on AMD Ryzen™ PRO 6000 H Series mobile processors</p></li><li><p>Made from recycled aluminum &amp; post-consumer content recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology with Microsoft Pluton</p></li><li><p>Premium FHD IR camera, Dolby Voice®, &amp; Dolby Atmos<sup>®</sup> Speaker System</p></li><li><p>AMD discrete graphics options ideal for content creators</p></li><li><p>Refined keyboard with enhanced dual-purpose TrackPoint</p></li></ul>",
+                "marketingShortDescription": "<ul style=\"list-style-type: disc;\"><li><p>Performance powerhouse with AMD Ryzen™ Pro 6000 H Series</p></li><li><p>Made from recycled aluminum &amp; PCC recycled plastic</p></li><li><p>Hyper-secure chip-to-cloud technology</p></li></ul>",
+                "description": "<p><br/></p>",
+                "summary": "ThinkPad Z16 AMD (16″)",
+                "url": "/p/laptops/thinkpad/thinkpadz/thinkpad-z16-16-amd/21D4000HUS",
+                "flCode": "laptops",
+                "flName": "Laptops",
+                "hasClaimIndicator": false,
+                "maxBuy": 2,
+                "maxBuyMessage": "eCoupon limited to  2 units",
+                "couponCount": -1,
+                "couponConsumed": false,
+                "couponProgress": -1,
+                "couponRuleDiscount": 35,
+                "couponDiscountType": 2,
+                "isDCGSubseries": false,
+                "isOutlet": false,
+                "outletFlagColor": "#4C1984"
+            }
+        ],
+        "count": 5,
+        "pageSize": 20,
+        "maxSavingAmount": "1931.65",
+        "page": 1,
+        "allDataFromIndex": true,
+        "maxSavingPercent": 35,
+        "currencyCode": "CAD",
+        "facetGroups": [
+            {
+                "groupName": null,
+                "facets": [
+                    {
+                        "facetId": 1037,
+                        "facetName": "Processor",
+                        "facetType": "productAttribute",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 9,
+                        "items": [
+                            {
+                                "name": "AMD Ryzen™ 9",
+                                "count": 1,
+                                "value": "AMD Ryzen™ 9"
+                            },
+                            {
+                                "name": "AMD Ryzen™ 7 Pro",
+                                "count": 3,
+                                "value": "AMD Ryzen™ 7 Pro"
+                            },
+                            {
+                                "name": "AMD Ryzen™ 5 Pro",
+                                "count": 1,
+                                "value": "AMD Ryzen™ 5 Pro"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    },
+                    {
+                        "facetId": 1068,
+                        "facetName": "Operating System",
+                        "facetType": "productAttribute",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 8,
+                        "items": [
+                            {
+                                "name": "Windows 11 Pro 64",
+                                "count": 5,
+                                "value": "Windows 11 Pro 64"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    },
+                    {
+                        "facetId": 1032,
+                        "facetName": "Graphics",
+                        "facetType": "productAttribute",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 7,
+                        "items": [
+                            {
+                                "name": "AMD Radeon™",
+                                "count": 5,
+                                "value": "AMD Radeon™"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    },
+                    {
+                        "facetId": 1070,
+                        "facetName": "Storage",
+                        "facetType": "productAttribute",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 5,
+                        "items": [
+                            {
+                                "name": "2 TB",
+                                "count": 1,
+                                "value": "2 TB"
+                            },
+                            {
+                                "name": "1 TB",
+                                "count": 2,
+                                "value": "1 TB"
+                            },
+                            {
+                                "name": "512 GB",
+                                "count": 2,
+                                "value": "512 GB"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    },
+                    {
+                        "facetId": 1039,
+                        "facetName": "Display",
+                        "facetType": "productAttribute",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 4,
+                        "items": [
+                            {
+                                "name": "WUXGA (1920 x 1200)",
+                                "count": 4,
+                                "value": "WUXGA (1920 x 1200)"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    },
+                    {
+                        "facetId": 1258,
+                        "facetName": "Price",
+                        "facetType": "price",
+                        "showType": "limit",
+                        "limitValue": 3,
+                        "multiSelect": null,
+                        "defaultValues": null,
+                        "hideValues": null,
+                        "weight": 2,
+                        "items": [
+                            {
+                                "name": "$2,000-$4,999.99",
+                                "count": 5,
+                                "value": "2000.0-4999.991"
+                            }
+                        ],
+                        "conditionIsBool": false,
+                        "show": true,
+                        "grayOut": false
+                    }
+                ]
+            }
+        ]
+    },
+    "params": null
+}

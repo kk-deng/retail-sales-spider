@@ -1,7 +1,10 @@
-import pytest
-from spiders.spider_man import RfdTopic
-from spiders.bestbuy_spider import BestBuyItem
+import json
 import random
+
+import pytest
+from spiders.bestbuy_spider import BestBuyItem
+from spiders.spider_man import RfdTopic
+
 
 @pytest.fixture(autouse=True)
 def api_topic():
@@ -1070,3 +1073,48 @@ def api_ikea_product_storeid():
     ikea_product = random.choice([ikea_product_contact_staff[0], ikea_product_instock[0]])
 
     return ikea_product
+
+
+@pytest.fixture
+def api_costco_item():
+    return {
+        "itemNumber": "1550251",
+        "orderItemId": "0",
+        "availability": "INSTOCK",
+        "availableForSale": True,
+        "itemClassification": "SMALLPACK",
+        "fulfilledBy": None,
+        "firstShipDate": None,
+        "lastShipDate": None,
+        "availableToSellDate": None,
+        "typeDescription": None,
+        "status": "200 OK",
+        "quantityRequested": 1,
+        "webCatalogId": "559-wm",
+        "distributionCenter": "559-WM",
+        "fulfillmentCenterCompanyId": 3,
+        "fulfillmentType": "depot",
+        "isComplex": False,
+        "requiresAssembly": False,
+        "disableShipMethodCode": False,
+        "description": None,
+        "eddRequestTransactionId": "5585ea40-ed72-45bc-b33b-364da655b3eb",
+        "shipmodeDates": [
+            {
+                "status": "200 OK",
+                "shippingCode": "UPG",
+                "supplierAvailabilityDate": "2022-06-07T00:00:00",
+                "estimatedDeliveryDate": "2022-06-08T00:00:00",
+                "description": None,
+                "availableDeliveryDates": None
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def api_lenovo_items():
+    with open('tests/jsons/lenovo.json') as lenovo_file:
+        data = json.load(lenovo_file)
+        
+    return data
