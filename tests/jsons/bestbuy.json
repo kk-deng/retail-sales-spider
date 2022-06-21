@@ -1,0 +1,75 @@
+{
+    "availabilities": [
+        {
+            "pickup": {
+                "status": "OutOfStock",
+                "purchasable": false,
+                "locations": [
+                    {
+                        "name": "Richmond Hill",
+                        "locationKey": "956",
+                        "quantityOnHand": 0,
+                        "fulfillmentKey": "506",
+                        "isReservable": false,
+                        "hasInventory": false,
+                        "supportsFulfillment": false,
+                        "id": null,
+                        "fulfillmentPartnerId": null
+                    },
+                    {
+                        "name": "Best Buy Mobile Centrepoint Mall",
+                        "locationKey": "237",
+                        "quantityOnHand": 0,
+                        "fulfillmentKey": "506",
+                        "isReservable": false,
+                        "hasInventory": false,
+                        "supportsFulfillment": false,
+                        "id": null,
+                        "fulfillmentPartnerId": null
+                    },
+                    {
+                        "name": "Markham",
+                        "locationKey": "937",
+                        "quantityOnHand": 0,
+                        "fulfillmentKey": "506",
+                        "isReservable": false,
+                        "hasInventory": false,
+                        "supportsFulfillment": false,
+                        "id": null,
+                        "fulfillmentPartnerId": null
+                    }
+                ]
+            },
+            "shipping": {
+                "status": "InStock",
+                "quantityRemaining": 83,
+                "purchasable": true,
+                "levelsOfServices": [
+                    {
+                        "carrierId": "FEDX",
+                        "carrierName": "",
+                        "deliveryDate": "2022-01-10T23:59:00Z",
+                        "deliveryDateExpiresOn": "2022-01-08T15:00:00Z",
+                        "deliveryDatePrecision": "1.00:00:00",
+                        "id": "SOP_506-84_0_0_FEDX-GROUND_IR-SC",
+                        "name": "",
+                        "price": 0
+                    }
+                ],
+                "orderLimit": null,
+                "restrictedZoneRegions": [],
+                "hasActiveCountdown": true,
+                "countdownIsZone": false,
+                "preorderInfo": null,
+                "isFreeShippingEligible": true,
+                "isBackorderable": false
+            },
+            "sku": "14671247",
+            "sellerId": "bbyca",
+            "saleChannelExclusivity": "InStoreAndOnline",
+            "scheduledDelivery": false,
+            "isGiftCard": false,
+            "isService": false
+        }
+    ]
+}
