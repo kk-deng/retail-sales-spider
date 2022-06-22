@@ -1,16 +1,18 @@
 import telegram
+from typing import Optional
 from functools import wraps
 from feapder.utils.log import log
 import time
 
 
 class TelegramBot:
-    def __init__(self, token, chat_id):
+    def __init__(self, token, chat_id, parse_mode: bool=True):
         self.token = token
         self.chat_id = chat_id
         self.bot = telegram.Bot(token=self.token)
+        self.parse_mode = parse_mode
 
-    def send_action(action):
+    def _send_action(action):
         def decorator(func):
             @wraps(func)
             def command_func(self, *args, **kwargs):
@@ -22,11 +24,11 @@ class TelegramBot:
         
         return decorator
 
-    @send_action(telegram.ChatAction.TYPING)
+    @_send_action(telegram.ChatAction.TYPING)
     def send_bot_msg(
         self, 
         content_msg: str, 
-        reply_to_msg_id: str or None=None,
+        reply_to_msg_id: Optional[str]=None,
         markup_url: str=None,
     ) -> telegram.Message:
         """Given a string msg and msg_id, send msg to telegram chat_id.
@@ -52,12 +54,20 @@ class TelegramBot:
             reply_markup = None
 
         try:
-            returned_msg = self.bot.send_message(
-                text=content_msg, 
-                chat_id=self.chat_id,
-                reply_to_message_id=reply_to_msg_id,
-                reply_markup=reply_markup,
-                parse_mode=telegram.ParseMode.MARKDOWN
+            if self.parse_mode:
+                returned_msg = self.bot.send_message(
+                    text=content_msg, 
+                    chat_id=self.chat_id,
+                    reply_to_message_id=reply_to_msg_id,
+                    reply_markup=reply_markup,
+                    parse_mode=telegram.ParseMode.MARKDOWN
+                )
+            else:
+                returned_msg = self.bot.send_message(
+                    text=content_msg, 
+                    chat_id=self.chat_id,
+                    reply_to_message_id=reply_to_msg_id,
+                    reply_markup=reply_markup,
                 )
             
             log.info('## Msg was sent successfully!')
