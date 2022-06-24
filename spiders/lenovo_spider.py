@@ -29,8 +29,8 @@ class LenovoSpider(feapder.AirSpider):
         self.chat_id = self.file_operator.chat_id
         self.tg_token = self.file_operator.newbot_token
         self.bot = TelegramBot(token=self.tg_token, chat_id=self.chat_id, parse_mode=False)
-        self.lenovo_header = self.file_operator.get_spider_header('lenovo_header')
-        self.url = "https://openapi.lenovo.com/ca/en/ofp/search/dlp/product/query/get/_tsc"
+        self.request_header = self.file_operator.get_spider_header('lenovo_header')
+        self.url = self.file_operator.lenovo_api
         self.params = {
             "pageFilterId": "49c9f88b-069a-41c9-9785-643e6aab7e96",
             "subseriesCode": "LEN101T0037",
@@ -62,7 +62,7 @@ class LenovoSpider(feapder.AirSpider):
             # raise Exception("response code not 200")
 
     def download_midware(self, request):
-        request.headers = self.lenovo_header
+        request.headers = self.request_header
         return request
 
     def parse(self, request, response):
@@ -72,6 +72,7 @@ class LenovoSpider(feapder.AirSpider):
         product_list = api_json['data']['data']
 
         for product in product_list:
+            # Create an object from dataclass
             z16_model = Z16Model(**product)
 
             # Get the difference between two record (new - old), converted to dict (asymmetric)
@@ -87,22 +88,6 @@ class LenovoSpider(feapder.AirSpider):
                 log.info(f'{z16_model.productCode} Model saved: {z16_model.couponSavePercentage}% price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and {z16_model.leadTimeMessage} ({z16_model.leadTime} days) w/ {z16_model.couponCode}')
 
                 log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
-            
-        # # Create an object from dataclass
-        # z16_model = Z16Model(**hus_info)
-
-        # # Get the difference between two record (new - old), converted to dict (asymmetric)
-        # info_diff = self.compare_model_diff(z16_model)
-
-        # if info_diff:
-        #     content_msg = self.compose_diff_msg(info_diff)
-        #     self.bot.send_bot_msg(content_msg)
-
-        #     # Save the latest info to the object
-        #     self.previous_model = z16_model
-        # else:
-        #     log.info(f'Model {z16_model.couponCode} price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and shipped in {z16_model.leadTime} days. {z16_model.leadTimeMessage}')
-        #     log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
 
     def get_random_time_gap(self) -> int:
         # Now time
