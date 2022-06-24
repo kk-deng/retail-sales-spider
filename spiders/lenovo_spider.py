@@ -36,7 +36,14 @@ class LenovoSpider(feapder.AirSpider):
             "subseriesCode": "LEN101T0037",
             "params": r"%7B%22classificationGroupIds%22%3A%22800001%22%2C%22pageFilterId%22%3A%2249c9f88b-069a-41c9-9785-643e6aab7e96%22%2C%22facets%22%3A%5B%5D%2C%22page%22%3A%221%22%2C%22pageSize%22%3A%2220%22%2C%22boostsProductCodes%22%3A%22%22%2C%22init%22%3Atrue%2C%22sorts%22%3A%5B%22shippingDate%22%5D%2C%22subseriesCode%22%3A%22LEN101T0037%22%7D"
         }
-        self.previous_model = Z16Model()
+        self.previous_models = Z16Model()
+        self.previous_model = {
+            '21D4000FUS': Z16Model(),
+            '21D4000GUS': Z16Model(),
+            '21D4000JUS': Z16Model(),
+            '21D4000KUS': Z16Model(),
+            '21D4000HUS': Z16Model(),
+        }
 
     def start_requests(self):
         for i in range(1, SCRAPE_COUNT):
@@ -62,23 +69,40 @@ class LenovoSpider(feapder.AirSpider):
         api_json = response.json
 
         # Only check the highest spec HUS model
-        hus_info = api_json['data']['data'][3]
+        product_list = api_json['data']['data']
 
-        # Create an object from dataclass
-        z16_model = Z16Model(**hus_info)
+        for product in product_list:
+            z16_model = Z16Model(**product)
 
-        # Get the difference between two record (new - old), converted to dict (asymmetric)
-        info_diff = self.compare_model_diff(z16_model)
+            # Get the difference between two record (new - old), converted to dict (asymmetric)
+            info_diff = self.compare_model_diff(z16_model)
+            
+            if info_diff:
+                content_msg = self.compose_diff_msg(z16_model, info_diff)
+                self.bot.send_bot_msg(content_msg)
 
-        if info_diff:
-            content_msg = self.compose_diff_msg(info_diff)
-            self.bot.send_bot_msg(content_msg)
+                # Save model if new changes are found
+                self.save_new_model(z16_model)
+            else:
+                log.info(f'{z16_model.productCode} Model saved: {z16_model.couponSavePercentage}% price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and {z16_model.leadTimeMessage} ({z16_model.leadTime} days) w/ {z16_model.couponCode}')
 
-            # Save the latest info to the object
-            self.previous_model = z16_model
-        else:
-            log.info(f'Model {z16_model.couponCode} price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and shipped in {z16_model.leadTime} days. {z16_model.leadTimeMessage}')
-            log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
+                log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
+            
+        # # Create an object from dataclass
+        # z16_model = Z16Model(**hus_info)
+
+        # # Get the difference between two record (new - old), converted to dict (asymmetric)
+        # info_diff = self.compare_model_diff(z16_model)
+
+        # if info_diff:
+        #     content_msg = self.compose_diff_msg(info_diff)
+        #     self.bot.send_bot_msg(content_msg)
+
+        #     # Save the latest info to the object
+        #     self.previous_model = z16_model
+        # else:
+        #     log.info(f'Model {z16_model.couponCode} price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and shipped in {z16_model.leadTime} days. {z16_model.leadTimeMessage}')
+        #     log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
 
     def get_random_time_gap(self) -> int:
         # Now time
@@ -97,11 +121,19 @@ class LenovoSpider(feapder.AirSpider):
 
     def compare_model_diff(self, new_model: Z16Model) -> dict:
         """Compare the new record of model with the saved model"""
-        return dict(new_model.__dict__.items() - self.previous_model.__dict__.items())
+        product_code = new_model.productCode
+        saved_product = self.previous_model[product_code]
+
+        return dict(new_model.__dict__.items() - saved_product.__dict__.items())
+
+    def save_new_model(self, new_model: Z16Model) -> None:
+        """Save the new model to self.previous_model"""
+        product_code = new_model.productCode
+        self.previous_model[product_code] = new_model
 
     @staticmethod
-    def compose_diff_msg(dct: dict) -> str:
-        msg_content = 'Z16 page change detected!:\n'
+    def compose_diff_msg(z16_model: Z16Model, dct: dict) -> str:
+        msg_content = f'Z16 {z16_model.productCode} price ${z16_model.finalPrice}/-{z16_model.savePercent}%:\n'
 
         for k, v in dct.items():
             msg_content += f'📄 {k}: {str(v)} \n'
