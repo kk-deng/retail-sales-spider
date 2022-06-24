@@ -4,11 +4,7 @@ import random
 import pytest
 from spiders.bestbuy_spider import BestBuyItem
 from spiders.spider_man import RfdTopic
-
-
-def load_json(file_path) -> dict:
-    with open(file_path) as json_file:
-        return json.load(json_file)
+from utils.helpers import load_json
 
 
 @pytest.fixture(autouse=True)
@@ -137,3 +133,8 @@ def api_lenovo_items():
     data = load_json('tests/jsons/lenovo.json')
         
     return data
+
+
+@pytest.fixture
+def api_samsung_product():
+    return load_json('tests/jsons/samsung.json')

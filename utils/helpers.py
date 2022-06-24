@@ -1,4 +1,5 @@
 import re
+import json
 
 
 def escape_markdown(text: str, version: int = 1, entity_type: str = None) -> str:
@@ -15,3 +16,8 @@ def escape_markdown(text: str, version: int = 1, entity_type: str = None) -> str
         raise ValueError('Markdown version must be either 1 or 2!')
 
     return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
+
+def load_json(file_path: str) -> dict:
+    with open(file_path) as json_file:
+        return json.load(json_file)
