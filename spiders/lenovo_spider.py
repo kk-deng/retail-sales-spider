@@ -34,6 +34,7 @@ class LenovoSpider(feapder.AirSpider):
         self.params = {
             "pageFilterId": "49c9f88b-069a-41c9-9785-643e6aab7e96",
             "subseriesCode": "LEN101T0037",
+            # "couponCode": "THINKBIGDEALS",
             "params": r"%7B%22classificationGroupIds%22%3A%22800001%22%2C%22pageFilterId%22%3A%2249c9f88b-069a-41c9-9785-643e6aab7e96%22%2C%22facets%22%3A%5B%5D%2C%22page%22%3A%221%22%2C%22pageSize%22%3A%2220%22%2C%22boostsProductCodes%22%3A%22%22%2C%22init%22%3Atrue%2C%22sorts%22%3A%5B%22shippingDate%22%5D%2C%22subseriesCode%22%3A%22LEN101T0037%22%7D"
         }
         self.previous_models = Z16Model()
@@ -85,9 +86,9 @@ class LenovoSpider(feapder.AirSpider):
                 # Save model if new changes are found
                 self.save_new_model(z16_model)
             else:
-                log.info(f'{z16_model.productCode} Model saved: {z16_model.couponSavePercentage}% price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and {z16_model.leadTimeMessage} ({z16_model.leadTime} days) w/ {z16_model.couponCode}')
+                log.info(f'{z16_model.productCode} Model, price: ${z16_model.finalPrice}/-{z16_model.savePercent}% and {z16_model.leadTimeMessage} ({z16_model.leadTime} days) w/ {z16_model.couponCode} (Save {z16_model.couponSavePercentage}%)')
 
-                log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
+                # log.info(f'ModifyTime: {z16_model.modifyTime}; OnlineTime: {z16_model.onlineDate}; ')
 
     def get_random_time_gap(self) -> int:
         # Now time
