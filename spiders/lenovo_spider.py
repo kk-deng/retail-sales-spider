@@ -37,6 +37,12 @@ class LenovoSpider(feapder.AirSpider):
             # "couponCode": "THINKBIGDEALS",
             "params": r"%7B%22classificationGroupIds%22%3A%22800001%22%2C%22pageFilterId%22%3A%2249c9f88b-069a-41c9-9785-643e6aab7e96%22%2C%22facets%22%3A%5B%5D%2C%22page%22%3A%221%22%2C%22pageSize%22%3A%2220%22%2C%22boostsProductCodes%22%3A%22%22%2C%22init%22%3Atrue%2C%22sorts%22%3A%5B%22shippingDate%22%5D%2C%22subseriesCode%22%3A%22LEN101T0037%22%7D"
         }
+        self.x12_params = {
+            "pageFilterId": "49c9f88b-069a-41c9-9785-643e6aab7e96",
+            "subseriesCode": "20UW0013US",
+            # "couponCode": "THINKBIGDEALS",
+            "params": r"%7B%22classificationGroupIds%22%3A%22800001%22%2C%22pageFilterId%22%3A%2249c9f88b-069a-41c9-9785-643e6aab7e96%22%2C%22facets%22%3A%5B%5D%2C%22page%22%3A%221%22%2C%22pageSize%22%3A%2220%22%2C%22boostsProductCodes%22%3A%22%22%2C%22init%22%3Atrue%2C%22sorts%22%3A%5B%22shippingDate%22%5D%2C%22subseriesCode%22%3A%2222TPX12X2D1%22%7D"
+        }
         self.previous_models = Z16Model()
         self.previous_model = {
             '21D4000FUS': Z16Model(),
@@ -44,6 +50,7 @@ class LenovoSpider(feapder.AirSpider):
             '21D4000JUS': Z16Model(),
             '21D4000KUS': Z16Model(),
             '21D4000HUS': Z16Model(),
+            '20UWCTO1WWCA1': Z16Model(),
         }
 
     def start_requests(self):
@@ -51,6 +58,10 @@ class LenovoSpider(feapder.AirSpider):
             time_gap = self.get_random_time_gap()
         
             yield feapder.Request(self.url, params=self.params, method="GET")
+
+            time.sleep(5)
+            yield feapder.Request(self.url, params=self.x12_params, method="GET")
+
             
             if SCRAPE_COUNT > 2:
                 log.info(f'## Lenovo.ca running for {i} / {SCRAPE_COUNT} runs, waiting for {time_gap}s...')
