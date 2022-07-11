@@ -96,13 +96,23 @@ class RfdSpider(feapder.AirSpider):
                 (topic.elapsed_mins <= 300 and topic.upvotes >= 20)
             ]
 
-            if any(record_conditions):
+            record_conditions_minimum = (topic.upvotes >= 0)
 
-                try:
-                    # Find the same thread_id in MongoDB
-                    db_topic = self.find_db_topic_by_id(topic.topic_id)
-                    msg_sent_counter = db_topic['msg_sent_cnt']
-                except:
+            if any(record_conditions) and record_conditions_minimum:
+
+                # try:
+                #     # Find the same thread_id in MongoDB
+                #     db_topic = self.find_db_topic_by_id(topic.topic_id)
+                #     msg_sent_counter = db_topic['msg_sent_cnt']
+                # except:
+                #     self.log_new_topic(topic)
+                #     msg_sent_counter = 0
+
+                db_topic_list = self.find_db_topic_by_id(topic.topic_id)
+
+                if db_topic_list:
+                    msg_sent_counter = db_topic_list[0]['msg_sent_cnt']
+                else:
                     self.log_new_topic(topic)
                     msg_sent_counter = 0
 
@@ -116,7 +126,7 @@ class RfdSpider(feapder.AirSpider):
                 # 2nd condition (will send only 2 times) is upvote count > 15, or total_views > 200 w/ upvote > 1
                 sendmsg_conditions_2 = [
                     (topic.upvotes >= 15),
-                    (topic.total_views >= 200 and topic.upvotes > 1 and topic.elapsed_mins <= 30),
+                    (topic.total_views >= 400 and topic.upvotes > 1 and topic.elapsed_mins <= 30),
                 ]
 
                 # 3rd condition (will send only 4 times) is views/min > 50 w/ recent topic
@@ -132,7 +142,7 @@ class RfdSpider(feapder.AirSpider):
                     returned_msg = self.send_text_msg(topic)
                     if returned_msg:
                         # If a deal has high upvotes, pin the msg in the channel
-                        if any(sendmsg_conditions_2):
+                        if all(sendmsg_conditions_2):
                             pin_message_id = returned_msg['message_id']
 
                             self.bot.pin_message(pin_message_id=pin_message_id)
@@ -186,8 +196,8 @@ class RfdSpider(feapder.AirSpider):
             f'{offer_price_str + offer_savings_str}'
         )
 
-    def find_db_topic_by_id(self, topic_id) -> int:
-        return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)[0]
+    def find_db_topic_by_id(self, topic_id) -> list:
+        return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)
 
 
 class RfdTopic:
