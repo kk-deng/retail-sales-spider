@@ -42,7 +42,8 @@ class RfdSpider(feapder.AirSpider):
         self.rfd_header = self.file_operator.get_spider_header('rfd')
 
     def start_callback(self):
-        self.bot.send_bot_msg('Bot started...')
+        welcome_str = '🆕*New*: (ps5) @*43.24* mins ago👍*Votes*: *4* votes (↑4 | ↓0) (0.09/min)*👀Reply|Views*: 5 | 825 (19.08/min)📕*Title*: _(Western Digital)_ WD\\_BLACK SN850 for PS5 2TB - \$216.99 or \$184.44 w/ student or senior discount, no PST 🔗*Link*: https://forums.redflagdeals.com/western-digital-wd_black-sn850-ps5-2tb-216-99-184-44-w-student-senior-discount-no-pst-2552689/'
+        self.bot.send_bot_msg(escape_markdown(welcome_str))
     
     def end_callback(self):
         self.bot.send_bot_msg('Bot Stopped...')
@@ -88,7 +89,7 @@ class RfdSpider(feapder.AirSpider):
 
         # For each topic from the API response
         for thread in topic_list:
-            topic = RfdTopic(thread, watch_list)
+            topic = RfdTopic(topic=thread, watch_list=watch_list)
 
             # Only topics with the record_conditions will be checked, e.g. recent or high votes topics
             record_conditions = [
@@ -100,21 +101,13 @@ class RfdSpider(feapder.AirSpider):
 
             if any(record_conditions) and record_conditions_minimum:
 
-                # try:
-                #     # Find the same thread_id in MongoDB
-                #     db_topic = self.find_db_topic_by_id(topic.topic_id)
-                #     msg_sent_counter = db_topic['msg_sent_cnt']
-                # except:
-                #     self.log_new_topic(topic)
-                #     msg_sent_counter = 0
+                db_topic_dict = self.find_db_topic_by_id(topic.topic_id)
 
-                db_topic_list = self.find_db_topic_by_id(topic.topic_id)
-
-                if db_topic_list:
-                    msg_sent_counter = db_topic_list[0]['msg_sent_cnt']
+                if db_topic_dict:
+                    topic.msg_sent_counter = db_topic_dict.get('msg_sent_cnt')
+                    topic.telegram_msg_id = db_topic_dict.get('telegram_msg_id')
                 else:
                     self.log_new_topic(topic)
-                    msg_sent_counter = 0
 
                 # Collect the msg sending conditions, any of them is True
                 # TODO: 1st condition (will send only 1 time) is for final upvotes, 2nd is for up only
@@ -135,22 +128,30 @@ class RfdSpider(feapder.AirSpider):
                 ]
 
                 # 1st condition for less popular deal, 2nd condition for popular deal
-                if (any(sendmsg_conditions_1) and msg_sent_counter == 0) or \
-                    (any(sendmsg_conditions_2) and msg_sent_counter < 2) or \
-                    (any(sendmsg_conditions_3) and msg_sent_counter < 3) :
-                    # returned_msg = self.send_text_msg(topic, watchlist=f'{matched_keywords}*NEW*')
+                if (any(sendmsg_conditions_1) and topic.msg_sent_counter == 0) or \
+                    (any(sendmsg_conditions_2) and topic.msg_sent_counter < 2) or \
+                    (any(sendmsg_conditions_3) and topic.msg_sent_counter < 3) :
+                    
                     returned_msg = self.send_text_msg(topic)
+
                     if returned_msg:
+
+                        telegram_msg_id = returned_msg['message_id']
                         # If a deal has high upvotes, pin the msg in the channel
                         if all(sendmsg_conditions_2):
-                            pin_message_id = returned_msg['message_id']
 
-                            self.bot.pin_message(pin_message_id=pin_message_id)
+                            self.bot.pin_message(pin_message_id=telegram_msg_id)
 
-                        msg_sent_counter += 1  # Record the sending count
+                        topic.msg_sent_counter += 1  # Record the sending count
+                        topic.telegram_msg_id = returned_msg['message_id']
                 
+                elif topic.elapsed_mins <= 60 and topic.telegram_msg_id:
+                    # Edit to update the latest change
+                    returned_msg = self.update_sent_msg(topic)
+                    log.warning(f'Updated! {returned_msg["message_id"]}') 
+
                 item = rfd_item.RfdTopicItem(topic)
-                item.msg_sent_cnt = msg_sent_counter
+
                 yield item
     
     @property
@@ -183,6 +184,20 @@ class RfdSpider(feapder.AirSpider):
         msg_content = str(topic)
 
         return self.bot.send_bot_msg(content_msg=msg_content, markup_url=topic.offer_url)
+    
+    def update_sent_msg(self, topic: RfdTopic, **kwargs) -> telegram.Message or False:
+        """Edit telegram messages from topic and return the msg_id from sent messages.
+
+        Args:
+            topic (RfdTopic): An object of each topic 
+
+        Returns:
+            telegram.Message: A Message object returned from send_bot_msg
+        """
+        update_timestamp = datetime.now().strftime('%H:%M:%S')
+        msg_content = f"⏲️@{update_timestamp}\n{str(topic)}"
+
+        return self.bot.edit_message(content_msg=msg_content, edit_msg_id=topic.telegram_msg_id ,markup_url=topic.offer_url)
 
     @staticmethod
     def log_new_topic(topic: RfdTopic) -> None:
@@ -196,14 +211,23 @@ class RfdSpider(feapder.AirSpider):
             f'{offer_price_str + offer_savings_str}'
         )
 
-    def find_db_topic_by_id(self, topic_id) -> list:
-        return self.db.find(coll_name='rfd_topic', condition={'topic_id': topic_id}, limit=1)
+    def find_db_topic_by_id(self, topic_id) -> dict:
+        # Slow down the get DB operation
+        # time.sleep(2)
+        try:
+            return self.db.find(
+                coll_name='rfd_topic', 
+                condition={'topic_id': topic_id}, 
+                limit=1
+            )[0]
+        except Exception as e:
+            return {}
 
 
 class RfdTopic:
-    def __init__(self, topic, watch_list: List[str]=[]):
+    def __init__(self, topic, telegram_msg_id: str=None, watch_list: List[str]=[]):
         self.topic_id = topic['topic_id']
-        self.topic_title = topic['title']
+        self.topic_title = topic['title'].replace('_', '\\_')
         self.votes = topic['votes'] or {}
         self.total_up = self.votes.get('total_up', 0)
         self.total_down = self.votes.get('total_down', 0)
@@ -227,6 +251,8 @@ class RfdTopic:
         self.total_up_per_min = self.total_up / self. elapsed_mins
         self.upvotes_per_min = self.upvotes / self.elapsed_mins
         self.views_per_min = self.total_views / self.elapsed_mins
+        self.msg_sent_counter = 0
+        self.telegram_msg_id = telegram_msg_id
     
     @staticmethod
     def utc_to_local(utc_dt: str) -> datetime:
@@ -248,7 +274,7 @@ class RfdTopic:
         return [keyword in dealer_and_title.lower() for keyword in self.watch_list]
     
     @property
-    def matched_keywords(self) -> str:
+    def matched_keywords(self) -> str|None:
         if any(self.watchlist_bool):
             keyword_list = [i for (i, v) in zip(self.watch_list, self.watchlist_bool) if v]
             return f'{"&".join(keyword_list)}'
@@ -283,7 +309,7 @@ class RfdTopic:
             f'{self.tg_msg_header} {keywords_str}@*{self.elapsed_mins:.2f}* mins ago\n'
             f'👍*Votes*: *{self.upvotes}* votes (↑{self.total_up} | ↓{self.total_down}) ({self.upvotes_per_min:.2f}/min)\n'
             f'{replies_n_views_str}'
-            f'📕*Title*: _({self.dealer_name})_ {(escape_markdown(self.topic_title))} \n'
+            f'📕*Title*: _({escape_markdown(self.dealer_name)})_ {(escape_markdown(self.topic_title))} \n'
             f'🔗*Link*: {self.topic_title_link}'
         )
 
