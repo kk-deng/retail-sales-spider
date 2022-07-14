@@ -1,0 +1,12 @@
+{
+    "Host": "shop.api.ingka.ikea.com",
+    "Content-Type": "application/json",
+    "Connection": "keep-alive",
+    "IOS-Build-Nr": "4660",
+    "Contract": "40663",
+    "Accept": "application/json",
+    "User-Agent": "IKEA App/3.8.2-4660 (iOS)",
+    "Consumer": "IKEAAPPI",
+    "Accept-Language": "en-ca",
+    "Accept-Encoding": "gzip, deflate, br"
+}
