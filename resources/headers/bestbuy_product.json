@@ -1,0 +1,13 @@
+{
+    "authority": "www.bestbuy.ca",
+    "pragma": "no-cache",
+    "cache-control": "no-cache",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36",
+    "dnt": "1",
+    "accept": "*/*",
+    "sec-fetch-site": "same-origin",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-dest": "empty",
+    "referer": "https://www.bestbuy.ca/en-ca/product/logitech-wireless-mechanical-mini-tactile-keyboard-w-wireless-darkfield-mouse-pale-grey-graphite-eng/B0016246",
+    "accept-language": "en-CA,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-GB;q=0.6,en-US;q=0.5"
+}
