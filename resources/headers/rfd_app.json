@@ -1,0 +1,10 @@
+{
+    "Host": "forums.redflagdeals.com",
+    "API-Key-Version": "1",
+    "API-Version": "1.0",
+    "Accept": "*/*",
+    "User-Agent": "RedFlagDeals/6063 CFNetwork/1209 Darwin/20.2.0",
+    "Accept-Language": "en-ca",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive"
+}
